@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd solarise-frontend && npm run build",
+  "outputDirectory": "solarise-frontend/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

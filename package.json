@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "cd solarise-api && npm run dev",
-    "start": "cd solarise-api && npm start"
+    "start": "cd solarise-api && npm start",
+    "build": "cd solarise-frontend && npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1113.0",
