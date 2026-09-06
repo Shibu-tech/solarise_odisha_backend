@@ -452,47 +452,57 @@ const ProjectDetailsPage = () => {
             </svg>
             <span>Project Status Transition Desk</span>
           </h2>
-          <form onSubmit={handleUpdateStatus} className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold uppercase text-gray-600">
-                  Target Project Status Tag (40+ States)
-                </label>
-                <StatusTag status={selectedStatus} showHashtag={true} size="md" />
+          <RoleGuard roles={['admin', 'doc_team', 'site_manager']}>
+            <form onSubmit={handleUpdateStatus} className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold uppercase text-gray-600">
+                    Target Project Status Tag (40+ States)
+                  </label>
+                  <StatusTag status={selectedStatus} showHashtag={true} size="md" />
+                </div>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-xs font-mono focus:ring-2 focus:ring-emerald-500 bg-white"
+                >
+                  {ALL_PROJECT_STATUSES.map((st) => (
+                    <option key={st} value={st}>
+                      #{st} — ({st.replace(/_/g, ' ').toUpperCase()})
+                    </option>
+                  ))}
+                </select>
               </div>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-xs font-mono focus:ring-2 focus:ring-emerald-500 bg-white"
+
+              <div>
+                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                  Status Change Remarks & Hashtags (#)
+                </label>
+                <HashtagTagInput
+                  value={statusRemarks}
+                  onChange={setStatusRemarks}
+                  onSelectTag={(t) => setSelectedStatus(t)}
+                  placeholder="Type validation remarks or # to insert tag..."
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={updatingStatus}
+                className="px-5 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
               >
-                {ALL_PROJECT_STATUSES.map((st) => (
-                  <option key={st} value={st}>
-                    #{st} — ({st.replace(/_/g, ' ').toUpperCase()})
-                  </option>
-                ))}
-              </select>
+                {updatingStatus ? 'Updating Tag...' : 'Update Status Tag'}
+              </button>
+            </form>
+          </RoleGuard>
+          <RoleGuard roles={['agent', 'accounts']}>
+            <div className="flex items-center space-x-2 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+              <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Status updates are managed by the Doc Team, Site Manager, or Admin.</span>
             </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
-                Status Change Remarks & Hashtags (#)
-              </label>
-              <HashtagTagInput
-                value={statusRemarks}
-                onChange={setStatusRemarks}
-                onSelectTag={(t) => setSelectedStatus(t)}
-                placeholder="Type validation remarks or # to insert tag..."
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={updatingStatus}
-              className="px-5 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
-            >
-              {updatingStatus ? 'Updating Tag...' : 'Update Status Tag'}
-            </button>
-          </form>
+          </RoleGuard>
         </div>
 
         {/* Site Manager: Material Delivery Logs & Multi-Batch Tracking */}
