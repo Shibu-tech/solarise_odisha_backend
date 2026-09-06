@@ -11,9 +11,8 @@ const pool = new pg.Pool({
     connectionTimeoutMillis: 10000
 });
 
-pool.on('connect', (client) => {
-    client.query('SET search_path TO solarise, public');
-    console.log('Connected to the database');
+pool.on('connect', () => {
+    console.log('Connected to PostgreSQL (default schema: solarise)');
 });
 
 pool.on('error', (err) => {
