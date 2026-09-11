@@ -495,10 +495,10 @@ const ProjectDetailsPage = () => {
               </button>
             </form>
           </RoleGuard>
-          <RoleGuard roles={['agent', 'accounts']}>
+          {/* <RoleGuard roles={['agent', 'accounts']}>
             <div className="flex items-center space-x-2 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
             </div>
-          </RoleGuard>
+          </RoleGuard> */}
         </div>
 
         {/* Site Manager: Material Delivery Logs & Multi-Batch Tracking */}
