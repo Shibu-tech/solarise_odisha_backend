@@ -498,7 +498,6 @@ const ProjectDetailsPage = () => {
           <RoleGuard roles={['agent', 'accounts']}>
             <div className="flex items-center space-x-2 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
               <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </RoleGuard>
