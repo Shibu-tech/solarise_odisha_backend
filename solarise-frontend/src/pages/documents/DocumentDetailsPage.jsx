@@ -172,9 +172,9 @@ const DocumentDetailsPage = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl shadow-2xs border border-gray-200">
         <div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-mono uppercase px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md font-bold">
               {document.doc_type}
             </span>
@@ -187,26 +187,26 @@ const DocumentDetailsPage = () => {
               {document.status?.replace(/_/g, ' ')}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 break-words">
             {document.file_name || `${document.doc_type}_file`}
           </h1>
           <p className="text-xs text-gray-500 mt-1">
             Consumer ID: <span className="font-mono font-semibold text-gray-700">{document.consumer_id}</span> | Version: <span className="font-bold text-purple-600">v{document.version || 1}</span>
           </p>
         </div>
-        <div className="mt-4 md:mt-0 flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0">
           {(document.status === 'uploaded' || document.status === 'action_required') && (
             <RoleGuard allowedRoles={['doc_team', 'admin']}>
               <button
                 onClick={handleVerify}
                 disabled={verifying}
-                className="px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
+                className="px-3.5 sm:px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition shadow-2xs"
               >
                 {verifying ? 'Verifying...' : 'Verify Document'}
               </button>
               <button
                 onClick={() => setShowRejectModal(true)}
-                className="px-4 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-700 transition shadow-sm"
+                className="px-3.5 sm:px-4 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-700 transition shadow-2xs"
               >
                 Reject Document
               </button>
@@ -215,7 +215,7 @@ const DocumentDetailsPage = () => {
           <RoleGuard allowedRoles={['doc_team', 'admin', 'site_manager']}>
             <button
               onClick={() => setShowFlagModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-sm"
+              className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-2xs"
             >
               Flag Document
             </button>
@@ -223,7 +223,7 @@ const DocumentDetailsPage = () => {
           {(document.status === 'action_required' || document.status === 'rejected') && (
             <button
               onClick={() => navigate(`/documents/${id}/resolve`)}
-              className="px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white text-xs font-bold rounded-xl hover:from-orange-700 hover:to-amber-700 transition shadow-sm flex items-center space-x-1"
+              className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white text-xs font-bold rounded-xl hover:from-orange-700 hover:to-amber-700 transition shadow-2xs flex items-center space-x-1"
             >
               <span>Stepped Resolution Workflow</span>
             </button>
@@ -233,13 +233,13 @@ const DocumentDetailsPage = () => {
               setUploadMode('file');
               setShowReuploadModal(true);
             }}
-            className="px-4 py-2 bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold rounded-xl hover:bg-purple-100 transition"
+            className="px-3.5 sm:px-4 py-2 bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold rounded-xl hover:bg-purple-100 transition"
           >
             + Upload New Version
           </button>
           <button
             onClick={() => navigate('/documents')}
-            className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
+            className="px-3.5 sm:px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
           >
             ← Back
           </button>
@@ -248,10 +248,10 @@ const DocumentDetailsPage = () => {
 
       {/* Details Card */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">Document Information & Metadata</h2>
+        <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-2xl shadow-2xs border border-gray-200 space-y-4">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">Document Information & Metadata</h2>
 
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 text-xs">
             <div>
               <span className="text-gray-400 font-semibold block">Document Category</span>
               <span className="capitalize font-mono font-medium text-gray-900">{(document.doc_type || '').replace(/_/g, ' ')}</span>
@@ -400,9 +400,9 @@ const DocumentDetailsPage = () => {
 
       {/* Modal: Reject Reason */}
       {showRejectModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-rose-900">Reject Document</h3>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-xl space-y-4 my-auto max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-bold text-rose-900">Reject Document</h3>
             <form onSubmit={handleReject} className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Reason for Rejection *</label>
@@ -412,22 +412,22 @@ const DocumentDetailsPage = () => {
                   required
                   rows={3}
                   placeholder="Explain why this document is rejected (e.g. blurry geotag photo, mismatched name)..."
-                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                  className="w-full px-3 py-2 rounded-xl border text-xs focus:ring-2 focus:ring-rose-500 outline-hidden"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t">
                 <button
                   type="button"
                   onClick={() => setShowRejectModal(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl"
+                  className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={rejecting}
-                  className="px-4 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-700 disabled:opacity-50 transition shadow-2xs"
                 >
                   {rejecting ? 'Rejecting...' : 'Confirm Rejection'}
                 </button>
@@ -439,23 +439,23 @@ const DocumentDetailsPage = () => {
 
       {/* Modal: Reupload Version */}
       {showReuploadModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-purple-900">Upload New Document Version</h3>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-xl space-y-4 my-auto max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-bold text-purple-900">Upload New Document Version</h3>
 
             {/* Mode Switcher */}
             <div className="flex bg-gray-100 p-1 rounded-xl text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setUploadMode('file')}
-                className={`flex-1 py-1.5 rounded-lg transition ${uploadMode === 'file' ? 'bg-white text-purple-900 shadow-xs' : 'text-gray-500'}`}
+                className={`flex-1 py-1.5 rounded-lg transition ${uploadMode === 'file' ? 'bg-white text-purple-900 shadow-2xs' : 'text-gray-500'}`}
               >
                 Upload File (AWS S3)
               </button>
               <button
                 type="button"
                 onClick={() => setUploadMode('url')}
-                className={`flex-1 py-1.5 rounded-lg transition ${uploadMode === 'url' ? 'bg-white text-purple-900 shadow-xs' : 'text-gray-500'}`}
+                className={`flex-1 py-1.5 rounded-lg transition ${uploadMode === 'url' ? 'bg-white text-purple-900 shadow-2xs' : 'text-gray-500'}`}
               >
                 External URL
               </button>
@@ -487,7 +487,7 @@ const DocumentDetailsPage = () => {
                     onChange={(e) => setReuploadUrl(e.target.value)}
                     required
                     placeholder="https://..."
-                    className="w-full px-3 py-2 rounded-xl border text-xs font-mono"
+                    className="w-full px-3 py-2 rounded-xl border text-xs font-mono focus:ring-2 focus:ring-purple-500 outline-hidden"
                   />
                 </div>
               )}
@@ -499,22 +499,22 @@ const DocumentDetailsPage = () => {
                   value={reuploadFileName}
                   onChange={(e) => setReuploadFileName(e.target.value)}
                   placeholder="e.g. updated_electric_bill.pdf"
-                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                  className="w-full px-3 py-2 rounded-xl border text-xs focus:ring-2 focus:ring-purple-500 outline-hidden"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t">
                 <button
                   type="button"
                   onClick={() => setShowReuploadModal(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl"
+                  className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={reuploading}
-                  className="px-4 py-2 bg-purple-600 text-white text-xs font-semibold rounded-xl hover:bg-purple-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white text-xs font-semibold rounded-xl hover:bg-purple-700 disabled:opacity-50 transition shadow-2xs"
                 >
                   {reuploading ? 'Uploading to S3...' : 'Re-upload Document'}
                 </button>
@@ -526,9 +526,9 @@ const DocumentDetailsPage = () => {
 
       {/* Modal: Flag Document */}
       {showFlagModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Flag Document for Correction</h3>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-xl space-y-4 my-auto max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Flag Document for Correction</h3>
             <p className="text-xs text-gray-500">
               Flagging this document will set its status to <span className="font-bold text-orange-600">Action Required</span> and automatically create an open action item.
             </p>
@@ -539,7 +539,7 @@ const DocumentDetailsPage = () => {
                 <select
                   value={flagActionType}
                   onChange={(e) => setFlagActionType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-orange-500 outline-hidden"
                 >
                   <option value="electric_bill_name_correction">Electric Bill Name Correction</option>
                   <option value="bank_passbook_name_correction">Bank Passbook Name Correction</option>
@@ -558,22 +558,22 @@ const DocumentDetailsPage = () => {
                   required
                   rows={3}
                   placeholder="Specify the issue (e.g., Name mismatch on electric bill, unclear scan)..."
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-800 focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-800 focus:ring-2 focus:ring-orange-500 outline-hidden"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t">
                 <button
                   type="button"
                   onClick={() => setShowFlagModal(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl"
+                  className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={flagging}
-                  className="px-4 py-2 bg-orange-600 text-white text-xs font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition shadow-sm"
+                  className="w-full sm:w-auto px-4 py-2 bg-orange-600 text-white text-xs font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition shadow-2xs"
                 >
                   {flagging ? 'Flagging...' : 'Confirm Flag Document'}
                 </button>

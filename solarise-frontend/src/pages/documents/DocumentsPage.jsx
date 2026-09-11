@@ -182,16 +182,16 @@ const DocumentsPage = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Documents & Geotag Verification</h1>
-          <p className="text-sm text-gray-500 mt-1">Review geotagged photos, Aadhaar, ROR, NOC, and DISCOM paperwork</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Documents & Geotag Verification</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">Review geotagged photos, Aadhaar, ROR, NOC, and DISCOM paperwork</p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 md:mt-0">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
             variant="primary"
             onClick={() => navigate('/documents/upload')}
-            className="px-4 py-2 text-xs font-semibold shadow-sm"
+            className="px-3.5 sm:px-4 py-2 text-xs font-semibold shadow-xs"
           >
             + Upload Document
           </Button>
@@ -199,89 +199,99 @@ const DocumentsPage = () => {
       </div>
 
       {/* Status KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total Uploads</span>
-          <p className="text-2xl font-extrabold text-gray-900 mt-1">{totalCount}</p>
-          <span className="text-[10px] text-gray-400 mt-1 block">Indexed documents</span>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200 shadow-2xs">
+          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total Uploads</span>
+          <p className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-1">{totalCount}</p>
+          <span className="text-[10px] text-gray-400 mt-0.5 sm:mt-1 block">Indexed documents</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/30 to-white shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-600">Pending Review</span>
-          <p className="text-2xl font-extrabold text-amber-700 mt-1">{uploadedCount}</p>
-          <span className="text-[10px] text-amber-600 mt-1 block">Awaiting approval</span>
+        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/30 to-white shadow-2xs">
+          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-amber-600">Pending Review</span>
+          <p className="text-xl sm:text-2xl font-extrabold text-amber-700 mt-1">{uploadedCount}</p>
+          <span className="text-[10px] text-amber-600 mt-0.5 sm:mt-1 block">Awaiting approval</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/30 to-white shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Verified Docs</span>
-          <p className="text-2xl font-extrabold text-emerald-700 mt-1">{verifiedCount}</p>
-          <span className="text-[10px] text-emerald-600 mt-1 block">Passed compliance</span>
+        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/30 to-white shadow-2xs">
+          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Verified Docs</span>
+          <p className="text-xl sm:text-2xl font-extrabold text-emerald-700 mt-1">{verifiedCount}</p>
+          <span className="text-[10px] text-emerald-600 mt-0.5 sm:mt-1 block">Passed compliance</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/30 to-white shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-rose-600">Rejected</span>
-          <p className="text-2xl font-extrabold text-rose-700 mt-1">{rejectedCount}</p>
-          <span className="text-[10px] text-rose-600 mt-1 block">Requires re-upload</span>
+        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50/30 to-white shadow-2xs">
+          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-rose-600">Rejected</span>
+          <p className="text-xl sm:text-2xl font-extrabold text-rose-700 mt-1">{rejectedCount}</p>
+          <span className="text-[10px] text-rose-600 mt-0.5 sm:mt-1 block">Requires re-upload</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50/50 to-white shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-600">Action Required</span>
-          <p className="text-2xl font-extrabold text-orange-700 mt-1">{actionRequiredCount}</p>
-          <span className="text-[10px] text-orange-600 mt-1 block">Corrections requested</span>
+        <div className="col-span-2 sm:col-span-1 bg-white p-3.5 sm:p-4 rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50/50 to-white shadow-2xs">
+          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-orange-600">Action Required</span>
+          <p className="text-xl sm:text-2xl font-extrabold text-orange-700 mt-1">{actionRequiredCount}</p>
+          <span className="text-[10px] text-orange-600 mt-0.5 sm:mt-1 block">Corrections requested</span>
         </div>
       </div>
 
       {/* Filter Tabs & Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-gray-200 shadow-sm">
-        <div className="flex items-center space-x-1 overflow-x-auto">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-gray-200 shadow-2xs">
+        {/* Horizontal scrollable tabs with touch support */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none -mx-1 px-1">
           {[
             { key: 'all', label: 'All Documents' },
-            { key: 'uploaded', label: `Pending Review (${uploadedCount})` },
-            { key: 'action_required', label: `Action Required (${actionRequiredCount})` },
+            { key: 'uploaded', label: `Pending (${uploadedCount})` },
+            { key: 'action_required', label: `Action (${actionRequiredCount})` },
             { key: 'verified', label: `Verified (${verifiedCount})` },
             { key: 'rejected', label: `Rejected (${rejectedCount})` },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 ${activeTab === tab.key
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100'
-                }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 whitespace-nowrap ${
+                activeTab === tab.key
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:bg-gray-100 bg-gray-50/60'
+              }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
+        {/* Search & Category Filter */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
           <select
             value={selectedDocType}
             onChange={(e) => setSelectedDocType(e.target.value)}
-            className="px-3 py-1.5 rounded-xl border border-gray-300 text-xs bg-white focus:ring-2 focus:ring-emerald-500 font-medium"
+            className="w-full sm:w-56 px-3 py-2 text-xs bg-white rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 font-medium truncate"
           >
-            <option value="all">All Document Types (28 Categories)</option>
+            <option value="all">All Types (28 Categories)</option>
             {ALL_DOCUMENT_TYPES.map((dt) => (
               <option key={dt.value} value={dt.value}>
-                {dt.label} ({dt.value})
+                {dt.label}
               </option>
             ))}
           </select>
 
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search documents..."
-            className="w-full sm:w-52 px-3.5 py-1.5 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-500"
-          />
+          <div className="relative w-full sm:w-52">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search documents..."
+              className="w-full pl-8.5 pr-3.5 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
         </div>
       </div>
 
       {/* Pending Correction Actions Desk Banner */}
       {openActions.length > 0 && (
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200 shadow-sm space-y-3">
-          <div className="flex justify-between items-center">
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-5 rounded-2xl border border-amber-200 shadow-2xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5">
             <div className="flex items-center space-x-2">
               <span className="flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -296,27 +306,27 @@ const DocumentsPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {openActions.map((act) => (
-              <div key={act.id} className="bg-white p-3.5 rounded-xl border border-amber-200 shadow-xs space-y-2 text-xs">
-                <div className="flex justify-between items-start">
-                  <span className="font-bold text-gray-900">{act.consumer_name || `Project #${act.project_id}`}</span>
+              <div key={act.id} className="bg-white p-3.5 rounded-xl border border-amber-200 shadow-2xs space-y-2 text-xs">
+                <div className="flex justify-between items-start gap-2">
+                  <span className="font-bold text-gray-900 truncate">{act.consumer_name || `Project #${act.project_id}`}</span>
                   <StatusTag status={act.status || 'open'} size="sm" />
                 </div>
-                <div className="inline-block px-2 py-0.5 bg-amber-100 text-amber-900 rounded font-bold text-[11px]">
+                <div className="inline-block px-2 py-0.5 bg-amber-100 text-amber-900 rounded font-bold text-[11px] truncate max-w-full">
                   {(act.action_type || '').replace(/_/g, ' ')}
                 </div>
                 <p className="text-gray-600 text-[11px] line-clamp-2">{act.detail || 'Correction detail requested'}</p>
-                <div className="pt-2 border-t flex justify-between items-center text-[11px]">
+                <div className="pt-2 border-t border-amber-100 flex flex-wrap justify-between items-center gap-2 text-[11px]">
                   <span className="text-gray-400">Raised: {act.raised_by_name || 'Doc Team'}</span>
-                  <div className="flex items-center space-x-1.5">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenResolverForAction(act)}
-                      className="px-2.5 py-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-[10px] rounded-lg transition shadow-xs flex items-center space-x-1"
+                      className="px-2.5 py-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-[10px] rounded-lg transition shadow-2xs flex items-center space-x-1"
                     >
                       <span>Stepped Resolve</span>
                     </button>
                     <button
                       onClick={() => navigate(`/projects/${act.project_id}`)}
-                      className="text-amber-700 font-bold hover:underline text-[10px]"
+                      className="text-amber-700 font-bold hover:underline text-[10px] px-1"
                     >
                       View →
                     </button>
@@ -329,14 +339,14 @@ const DocumentsPage = () => {
       )}
 
       {error && (
-        <div className="p-4 bg-amber-50 text-amber-800 text-xs rounded-xl border border-amber-200 flex items-center justify-between">
+        <div className="p-4 bg-amber-50 text-amber-800 text-xs rounded-xl border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <span>{error}</span>
-          <button onClick={fetchDocumentsData} className="underline font-semibold ml-4">Retry</button>
+          <button onClick={fetchDocumentsData} className="underline font-semibold text-xs">Retry</button>
         </div>
       )}
 
-      {/* Main Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Main Records (Responsive Cards on Mobile, Table on Desktop) */}
+      <div className="bg-white rounded-2xl shadow-2xs border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex min-h-[250px] items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
@@ -356,113 +366,215 @@ const DocumentsPage = () => {
             </div>
           </div>
         ) : (
-          <Table>
-            <Table.Header>
-              <Table.HeaderCell>Consumer</Table.HeaderCell>
-              <Table.HeaderCell>Document Type</Table.HeaderCell>
-              <Table.HeaderCell>Version</Table.HeaderCell>
-              <Table.HeaderCell>Geotag GPS</Table.HeaderCell>
-              <Table.HeaderCell>Status</Table.HeaderCell>
-              <Table.HeaderCell>Uploaded At</Table.HeaderCell>
-              <Table.HeaderCell>Actions</Table.HeaderCell>
-            </Table.Header>
-            <Table.Body>
+          <>
+            {/* Mobile View: Clean Card Layout (< md screens) */}
+            <div className="block md:hidden divide-y divide-gray-100">
               {filteredDocs.map((doc) => (
-                <Table.Row key={doc.id}>
-                  <Table.Cell className="font-medium text-gray-900">
-                    {doc.consumer_name || `Consumer #${doc.consumer_id}`}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-800 border">
-                      {DOC_TYPE_LABELS[doc.doc_type] || (doc.doc_type || '').replace(/_/g, ' ')}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell className="font-mono text-xs font-semibold text-purple-700">
-                    v{doc.version || 1}
-                  </Table.Cell>
-                  <Table.Cell className="text-xs font-mono">
-                    {doc.geo_lat && doc.geo_lng ? (
-                      <span className="text-amber-700 font-bold flex items-center space-x-1">
-                        <svg className="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span>{parseFloat(doc.geo_lat).toFixed(3)}, {parseFloat(doc.geo_lng).toFixed(3)}</span>
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">No Geotag</span>
-                    )}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className={`px-2.5 py-1 text-[11px] rounded-full font-bold capitalize ${doc.status === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                <div key={doc.id} className="p-4 space-y-3 hover:bg-gray-50/50 transition">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        {doc.consumer_name || `Consumer #${doc.consumer_id}`}
+                      </h4>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                          {DOC_TYPE_LABELS[doc.doc_type] || (doc.doc_type || '').replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">
+                          v{doc.version || 1}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`px-2.5 py-1 text-[10px] rounded-full font-bold capitalize shrink-0 ${
+                      doc.status === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
                       doc.status === 'rejected' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                        'bg-amber-100 text-amber-800 border border-amber-200'
-                      }`}>
+                      'bg-amber-100 text-amber-800 border border-amber-200'
+                    }`}>
                       {doc.status}
                     </span>
-                  </Table.Cell>
-                  <Table.Cell className="text-xs text-gray-500">
-                    {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'N/A'}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/documents/${doc.id}`)}
-                      >
-                        View
-                      </Button>
-                      {(doc.status === 'action_required' || doc.status === 'rejected') && (
-                        <button
-                          onClick={() => navigate(`/documents/${doc.id}/resolve`)}
-                          className="px-2 py-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-[11px] font-bold rounded-lg transition shadow-xs"
-                        >
-                          Resolve
-                        </button>
-                      )}
-                      {canFlag && doc.status !== 'action_required' && (
-                        <button
-                          onClick={() => setFlaggingDoc(doc)}
-                          disabled={actionLoading}
-                          className="px-2 py-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-[11px] font-bold rounded-lg transition shadow-xs"
-                        >
-                          Flag
-                        </button>
-                      )}
-                      {canVerify && (doc.status === 'uploaded' || doc.status === 'action_required') && (
-                        <>
-                          <button
-                            onClick={() => handleQuickVerify(doc.id)}
-                            disabled={actionLoading}
-                            className="px-2 py-1 bg-emerald-600 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition"
-                          >
-                            Verify
-                          </button>
-                          <button
-                            onClick={() => setRejectingDoc(doc)}
-                            disabled={actionLoading}
-                            className="px-2 py-1 bg-rose-600 text-white text-[11px] font-semibold rounded-lg hover:bg-rose-700 disabled:opacity-50 transition"
-                          >
-                            Reject
-                          </button>
-                        </>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                    <div>
+                      <span className="text-gray-400 block text-[10px]">Geotag GPS:</span>
+                      {doc.geo_lat && doc.geo_lng ? (
+                        <span className="text-amber-700 font-bold flex items-center gap-1 font-mono text-[10px]">
+                          <svg className="w-3 h-3 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                          <span>{parseFloat(doc.geo_lat).toFixed(3)}, {parseFloat(doc.geo_lng).toFixed(3)}</span>
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">No GPS</span>
                       )}
                     </div>
-                  </Table.Cell>
-                </Table.Row>
+                    <div>
+                      <span className="text-gray-400 block text-[10px]">Uploaded Date:</span>
+                      <span className="text-gray-700 font-medium">
+                        {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Mobile Actions Toolbar */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/documents/${doc.id}`)}
+                      className="text-xs px-2.5 py-1"
+                    >
+                      View
+                    </Button>
+                    {(doc.status === 'action_required' || doc.status === 'rejected') && (
+                      <button
+                        onClick={() => navigate(`/documents/${doc.id}/resolve`)}
+                        className="px-2.5 py-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-bold rounded-lg transition shadow-2xs"
+                      >
+                        Resolve
+                      </button>
+                    )}
+                    {canFlag && doc.status !== 'action_required' && (
+                      <button
+                        onClick={() => setFlaggingDoc(doc)}
+                        disabled={actionLoading}
+                        className="px-2.5 py-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-lg transition shadow-2xs"
+                      >
+                        Flag
+                      </button>
+                    )}
+                    {canVerify && (doc.status === 'uploaded' || doc.status === 'action_required') && (
+                      <>
+                        <button
+                          onClick={() => handleQuickVerify(doc.id)}
+                          disabled={actionLoading}
+                          className="px-2.5 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition"
+                        >
+                          Verify
+                        </button>
+                        <button
+                          onClick={() => setRejectingDoc(doc)}
+                          disabled={actionLoading}
+                          className="px-2.5 py-1 bg-rose-600 text-white text-xs font-semibold rounded-lg hover:bg-rose-700 disabled:opacity-50 transition"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               ))}
-            </Table.Body>
-          </Table>
+            </div>
+
+            {/* Desktop View: Full Data Table (>= md screens) */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <Table.Header>
+                  <Table.HeaderCell>Consumer</Table.HeaderCell>
+                  <Table.HeaderCell>Document Type</Table.HeaderCell>
+                  <Table.HeaderCell>Version</Table.HeaderCell>
+                  <Table.HeaderCell>Geotag GPS</Table.HeaderCell>
+                  <Table.HeaderCell>Status</Table.HeaderCell>
+                  <Table.HeaderCell>Uploaded At</Table.HeaderCell>
+                  <Table.HeaderCell>Actions</Table.HeaderCell>
+                </Table.Header>
+                <Table.Body>
+                  {filteredDocs.map((doc) => (
+                    <Table.Row key={doc.id}>
+                      <Table.Cell className="font-medium text-gray-900">
+                        {doc.consumer_name || `Consumer #${doc.consumer_id}`}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-800 border">
+                          {DOC_TYPE_LABELS[doc.doc_type] || (doc.doc_type || '').replace(/_/g, ' ')}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell className="font-mono text-xs font-semibold text-purple-700">
+                        v{doc.version || 1}
+                      </Table.Cell>
+                      <Table.Cell className="text-xs font-mono">
+                        {doc.geo_lat && doc.geo_lng ? (
+                          <span className="text-amber-700 font-bold flex items-center space-x-1">
+                            <svg className="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>{parseFloat(doc.geo_lat).toFixed(3)}, {parseFloat(doc.geo_lng).toFixed(3)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">No Geotag</span>
+                        )}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className={`px-2.5 py-1 text-[11px] rounded-full font-bold capitalize ${doc.status === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                          doc.status === 'rejected' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                            'bg-amber-100 text-amber-800 border border-amber-200'
+                          }`}>
+                          {doc.status}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell className="text-xs text-gray-500">
+                        {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'N/A'}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/documents/${doc.id}`)}
+                          >
+                            View
+                          </Button>
+                          {(doc.status === 'action_required' || doc.status === 'rejected') && (
+                            <button
+                              onClick={() => navigate(`/documents/${doc.id}/resolve`)}
+                              className="px-2 py-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-[11px] font-bold rounded-lg transition shadow-2xs"
+                            >
+                              Resolve
+                            </button>
+                          )}
+                          {canFlag && doc.status !== 'action_required' && (
+                            <button
+                              onClick={() => setFlaggingDoc(doc)}
+                              disabled={actionLoading}
+                              className="px-2 py-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-[11px] font-bold rounded-lg transition shadow-2xs"
+                            >
+                              Flag
+                            </button>
+                          )}
+                          {canVerify && (doc.status === 'uploaded' || doc.status === 'action_required') && (
+                            <>
+                              <button
+                                onClick={() => handleQuickVerify(doc.id)}
+                                disabled={actionLoading}
+                                className="px-2 py-1 bg-emerald-600 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition"
+                              >
+                                Verify
+                              </button>
+                              <button
+                                onClick={() => setRejectingDoc(doc)}
+                                disabled={actionLoading}
+                                className="px-2 py-1 bg-rose-600 text-white text-[11px] font-semibold rounded-lg hover:bg-rose-700 disabled:opacity-50 transition"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
+            </div>
+          </>
         )}
       </div>
 
       {/* Quick Reject Modal */}
       {rejectingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-200 p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-200 p-5 sm:p-6 space-y-4 my-auto max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="font-bold text-rose-900 text-base">Reject Document Upload</h3>
               <button
                 onClick={() => setRejectingDoc(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-bold"
+                className="text-gray-400 hover:text-gray-600 text-sm font-bold p-1"
               >
                 ✕
               </button>
@@ -482,22 +594,22 @@ const DocumentsPage = () => {
                   required
                   rows={3}
                   placeholder="Explain rejection reason (e.g. illegible text, invalid GPS geotag, mismatch)..."
-                  className="w-full px-3 py-2 rounded-xl border text-xs"
+                  className="w-full px-3 py-2 rounded-xl border text-xs focus:ring-2 focus:ring-rose-500 outline-hidden"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end space-x-2 border-t">
+              <div className="pt-3 flex flex-col-reverse sm:flex-row justify-end gap-2 border-t">
                 <button
                   type="button"
                   onClick={() => setRejectingDoc(null)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
+                  className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-5 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-700 disabled:opacity-50 transition"
+                  className="w-full sm:w-auto px-5 py-2 bg-rose-600 text-white text-xs font-semibold rounded-xl hover:bg-rose-700 disabled:opacity-50 transition shadow-2xs"
                 >
                   {actionLoading ? 'Rejecting...' : 'Confirm Rejection'}
                 </button>
@@ -509,13 +621,13 @@ const DocumentsPage = () => {
 
       {/* Quick Flag Modal */}
       {flaggingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-200 p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-200 p-5 sm:p-6 space-y-4 my-auto max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="font-bold text-gray-900 text-base">Flag Document for Correction</h3>
               <button
                 onClick={() => setFlaggingDoc(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-bold"
+                className="text-gray-400 hover:text-gray-600 text-sm font-bold p-1"
               >
                 ✕
               </button>
@@ -532,7 +644,7 @@ const DocumentsPage = () => {
                 <select
                   value={flagActionType}
                   onChange={(e) => setFlagActionType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-orange-500 outline-hidden"
                 >
                   <option value="electric_bill_name_correction">Electric Bill Name Correction</option>
                   <option value="bank_passbook_name_correction">Bank Passbook Name Correction</option>
@@ -551,22 +663,22 @@ const DocumentsPage = () => {
                   required
                   rows={3}
                   placeholder="Specify correction needed (e.g. name discrepancy, update passbook)..."
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-800 focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-800 focus:ring-2 focus:ring-orange-500 outline-hidden"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end space-x-2 border-t">
+              <div className="pt-3 flex flex-col-reverse sm:flex-row justify-end gap-2 border-t">
                 <button
                   type="button"
                   onClick={() => setFlaggingDoc(null)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
+                  className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-5 py-2 bg-orange-600 text-white text-xs font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition shadow-sm"
+                  className="w-full sm:w-auto px-5 py-2 bg-orange-600 text-white text-xs font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition shadow-2xs"
                 >
                   {actionLoading ? 'Flagging...' : 'Confirm Flag Document'}
                 </button>
