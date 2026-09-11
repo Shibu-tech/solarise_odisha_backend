@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentService, consumerService, actionService } from '../../services/api';
 import { ALL_DOCUMENT_TYPES } from '../../constants/documentTypes';
+import LocationMapPicker from '../../components/ui/LocationMapPicker';
 
 const DocumentUploadPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const DocumentUploadPage = () => {
   const [flaggedDocs, setFlaggedDocs] = useState([]);
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'resolve'
   const [selectedFile, setSelectedFile] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   const [form, setForm] = useState({
     consumer_id: '',
@@ -87,6 +89,14 @@ const DocumentUploadPage = () => {
       alert('Geolocation is not supported by your browser.');
     }
   };
+
+  const handleMapLocationSelect = useCallback(({ lat, lng }) => {
+    setForm((prev) => ({
+      ...prev,
+      geo_lat: String(lat),
+      geo_lng: String(lng),
+    }));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -332,16 +342,32 @@ const DocumentUploadPage = () => {
               </svg>
               <span>Geotag Coordinates (Optional)</span>
             </label>
-            <button
-              type="button"
-              onClick={handleGetLocation}
-              className="px-3 py-1 bg-amber-600 text-white text-[11px] font-semibold rounded-lg hover:bg-amber-700 transition"
-            >
-              Auto-Detect My Location
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleGetLocation}
+                className="px-3 py-1 bg-amber-600 text-white text-[11px] font-semibold rounded-lg hover:bg-amber-700 transition"
+              >
+                Auto-Detect My Location
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMap((prev) => !prev)}
+                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold rounded-lg transition border ${
+                  showMap
+                    ? 'bg-blue-50 text-blue-700 border-blue-300'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
+                }`}
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                {showMap ? 'Hide Map' : '📍 Pick on Map'}
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] text-amber-800 font-semibold mb-1">Latitude (deg)</label>
               <input
@@ -367,6 +393,18 @@ const DocumentUploadPage = () => {
               />
             </div>
           </div>
+
+          {/* Interactive Map Picker */}
+          {showMap && (
+            <div className="pt-1">
+              <LocationMapPicker
+                lat={form.geo_lat}
+                lng={form.geo_lng}
+                onLocationSelect={handleMapLocationSelect}
+                height="250px"
+              />
+            </div>
+          )}
         </div>
 
         <div className="pt-4 flex justify-end space-x-3 border-t">

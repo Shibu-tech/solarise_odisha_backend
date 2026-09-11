@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { consumerService, areaBlockService } from '../../services/api';
 import { validateMobile, validateEmail, validatePAN, validateAadhaar } from '../../utils/validators';
 import { useToast } from '../../context/ToastContext';
+import LocationMapPicker from '../../components/ui/LocationMapPicker';
 
 const NewConsumerPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const NewConsumerPage = () => {
   const [error, setError] = useState('');
   const [geoLocating, setGeoLocating] = useState(false);
   const [geoAccuracy, setGeoAccuracy] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   const [form, setForm] = useState({
     full_name: '',
@@ -138,6 +140,18 @@ const NewConsumerPage = () => {
       toast.showInfo('GPS coordinates cleared', 'Notice');
     }
   };
+
+  const handleMapLocationSelect = useCallback(({ lat, lng }) => {
+    setForm((prev) => ({
+      ...prev,
+      geo_lat: String(lat),
+      geo_lng: String(lng),
+    }));
+    setGeoAccuracy(null);
+    if (toast?.showSuccess) {
+      toast.showSuccess(`Location selected on map: ${lat}, ${lng}`, 'Map Pin Set');
+    }
+  }, [toast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -548,6 +562,22 @@ const NewConsumerPage = () => {
                       </>
                     )}
                   </button>
+
+                  {/* Pick on Map Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setShowMap((prev) => !prev)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 shadow-xs active:scale-95 cursor-pointer border ${
+                      showMap
+                        ? 'bg-blue-50 text-blue-700 border-blue-300 ring-2 ring-blue-200/50'
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    <span>{showMap ? 'Hide Map' : '📍 Pick on Map'}</span>
+                  </button>
                 </div>
               </div>
 
@@ -591,6 +621,18 @@ const NewConsumerPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Interactive Map Picker */}
+              {showMap && (
+                <div className="pt-2">
+                  <LocationMapPicker
+                    lat={form.geo_lat}
+                    lng={form.geo_lng}
+                    onLocationSelect={handleMapLocationSelect}
+                    height="280px"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
