@@ -257,8 +257,9 @@ export const verifyDocument = async (req, res) => {
         }
 
         const verifiedDoc = result.rows[0];
+        let resolvedAction = null;
 
-        // Step 2: Check if there's an associated action with status 'doc_uploaded'
+        // Step 2: Check if there's an associated action that needs to be resolved
         const consumerRes = await client.query(
             "SELECT consumer_id FROM documents WHERE id = $1",
             [id]
@@ -267,19 +268,20 @@ export const verifyDocument = async (req, res) => {
 
         if (consumer_id) {
             const projectRes = await client.query(
-                "SELECT id FROM projects WHERE consumer_id = $1 LIMIT 1",
+                "SELECT id, current_status FROM projects WHERE consumer_id = $1 LIMIT 1",
                 [consumer_id]
             );
 
             if (projectRes.rowCount > 0) {
                 const projectId = projectRes.rows[0].id;
+                const currentProjectStatus = projectRes.rows[0].current_status;
 
-                // Check for action_required entry in 'doc_uploaded' status
+                // Check for action_required entry with status 'doc_uploaded' or 'open' (for any pending corrections)
                 const actionRes = await client.query(`
-                    SELECT ar.id, ar.assigned_to, ar.detail
+                    SELECT ar.id, ar.assigned_to, ar.detail, ar.status, ar.action_type
                     FROM action_required ar
                     WHERE ar.project_id = $1 
-                    AND ar.status = 'doc_uploaded'
+                    AND ar.status IN ('doc_uploaded', 'open')
                     ORDER BY ar.created_at DESC
                     LIMIT 1
                 `, [projectId]);
@@ -288,46 +290,52 @@ export const verifyDocument = async (req, res) => {
                     const action = actionRes.rows[0];
                     
                     // Resolve the action
-                    await client.query(`
+                    const resolveRes = await client.query(`
                         UPDATE action_required
                         SET status = 'resolved', resolved_by = $1, resolved_at = now()
                         WHERE id = $2
+                        RETURNING *
                     `, [verified_by, action.id]);
 
-                    // Update project status back to 'doc_verified'
-                    await client.query(`
-                        UPDATE projects
-                        SET current_status = 'doc_verified', updated_at = now()
-                        WHERE id = $1
-                    `, [projectId]);
+                    if (resolveRes.rowCount > 0) {
+                        resolvedAction = resolveRes.rows[0];
 
-                    // Record in status_history
-                    await client.query(`
-                        INSERT INTO status_history (project_id, from_status, to_status, changed_by, remarks)
-                        VALUES ($1, 'action_required', 'doc_verified', $2, 'Document correction verified and action resolved')
-                    `, [projectId, verified_by]);
+                        // Update project status back to 'doc_verified'
+                        await client.query(`
+                            UPDATE projects
+                            SET current_status = 'doc_verified', updated_at = now()
+                            WHERE id = $1
+                        `, [projectId]);
 
-                    // Send notification to the agent that their document was verified
-                    try {
-                        if (action.assigned_to) {
+                        // Record in status_history
+                        const fromStatus = currentProjectStatus || 'action_required';
+                        await client.query(`
+                            INSERT INTO status_history (project_id, from_status, to_status, changed_by, remarks)
+                            VALUES ($1, $2, 'doc_verified', $3, 'Document correction verified and action resolved')
+                        `, [projectId, fromStatus, verified_by]);
+
+                        // Send notification to the agent that their document was verified
+                        try {
+                            if (action.assigned_to) {
+                                notifyUsers({
+                                    userId: action.assigned_to,
+                                    projectId: projectId,
+                                    title: `Document Correction Accepted ✓`,
+                                    body: `Your corrected ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified and accepted. The action has been closed.`
+                                });
+                            }
+                        } catch { /* ignore notification errors */ }
+
+                        // Send notification to doc_team that action is resolved
+                        try {
                             notifyUsers({
-                                userId: action.assigned_to,
+                                targetRoles: ['admin', 'doc_team'],
                                 projectId: projectId,
-                                title: `Document Correction Accepted ✓`,
-                                body: `Your corrected ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified and accepted. The action has been closed.`
+                                title: `Action Resolved: Document Verified ✓`,
+                                body: `Document correction for ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified. Action closed.`
                             });
-                        }
-                    } catch { /* ignore notification errors */ }
-
-                    // Send notification to doc_team that action is resolved
-                    try {
-                        notifyUsers({
-                            targetRoles: ['admin', 'doc_team'],
-                            projectId: projectId,
-                            title: `Action Resolved: Document Verified ✓`,
-                            body: `Document correction for ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified. Action closed.`
-                        });
-                    } catch { /* ignore notification errors */ }
+                        } catch { /* ignore notification errors */ }
+                    }
                 }
             }
         }
@@ -344,7 +352,16 @@ export const verifyDocument = async (req, res) => {
             });
         } catch { /* ignore notification errors */ }
 
-        res.status(200).json({ message: "Document verified and action resolved", data: verifiedDoc });
+        // Return response with action status
+        res.status(200).json({ 
+            message: "Document verified and action resolved",
+            data: verifiedDoc,
+            action_resolved: resolvedAction ? {
+                id: resolvedAction.id,
+                status: 'resolved',
+                action_type: resolvedAction.action_type
+            } : null
+        });
     } catch (err) {
         await client.query("ROLLBACK");
         res.status(500).json({ error: err.message });
