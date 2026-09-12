@@ -1,52 +1,63 @@
-# Document Correction Workflow - Frontend Implementation Guide
-
-This guide provides instructions for implementing the Document Correction Workflow UI components in the React frontend.
+# Document Correction Workflow - Frontend Implementation Guide (UPDATED)
 
 ## Overview
+This guide shows how to integrate the document correction workflow components into your React application.
 
-The workflow involves three main UI components:
-1. **Pending Corrections Badge/Notification** - Shows agents they have corrections to make
-2. **Correction Details Modal** - Displays correction details and re-upload interface
-3. **Verification Review Panel** - For doc_team to review and verify corrections
+The workflow has three main parts:
+1. **Agent Dashboard** - View and manage pending corrections
+2. **Document Team Dashboard** - Review and verify corrected documents
+3. **Notification Badges** - Alert users about pending corrections
+
+---
+
+## Pre-Built Components
+
+All components have been created and are ready to use. They're located in:
+```
+src/components/documents/
+├── PendingCorrectionsCard.jsx        # Single correction card
+├── ReuploadDocumentModal.jsx         # Modal for re-uploading
+├── DocumentVerificationPanel.jsx     # Verification interface
+├── PendingCorrectionsPanel.jsx       # Full agent corrections dashboard
+├── VerificationQueuePanel.jsx        # Full doc team verification dashboard
+├── CorrectionsBadge.jsx              # Badge components
+└── index.js                          # Barrel export
+```
 
 ---
 
 ## Component 1: Pending Corrections Dashboard (For Agents)
 
-### Location
-`src/components/PendingCorrections.jsx` or within Agent Dashboard
-
-### Functionality
-Display a list of all corrections assigned to the logged-in agent.
-
-### API Endpoints
-```
-GET /api/actions - Get all open actions
-GET /api/actions/project/{projectId} - Get actions for specific project
-GET /api/documents/consumer/{consumerId} - Get documents for consumer
-GET /api/documents/{id} - Get specific document details
-```
-
-### Component Features
-
-#### 1. **Pending Corrections Counter Badge**
+### Usage in Code
 ```jsx
-// Show in header/sidebar
-<Badge variant="danger" count={pendingCorrectionsCount} />
+import { PendingCorrectionsPanel } from '../components/documents';
+
+export const PendingCorrectionsPage = () => {
+  const { user } = useAuth();
+  
+  return (
+    <div className="p-6">
+      <PendingCorrectionsPanel userId={user.id} />
+    </div>
+  );
+};
 ```
 
-#### 2. **Corrections List View**
-Display table/cards with columns:
-- Consumer Name
-- Document Type (e.g., "Electric Bill")
-- Correction Reason (from action.detail)
-- Days Open
-- Status Badge (open/doc_uploaded)
-- Action Buttons (View Details, Re-upload)
+### What It Does
+- Displays all corrections assigned to the current agent
+- Shows correction reason and status
+- Provides re-upload interface
+- Tracks version numbers
 
-#### 3. **Correction Details Modal**
+### API Endpoints Used
+```
+GET /api/actions - Get assigned actions
+GET /api/projects/:id - Get project details
+GET /api/documents/consumer/:consumerId - Get consumer documents
+POST /api/documents/:id/reupload - Submit corrected document
+```
 
-**When:** User clicks "View Details" or "Re-upload" button
+### User Flow (Agent)
 
 **Show:**
 - Original Document:
