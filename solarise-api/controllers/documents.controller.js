@@ -229,7 +229,6 @@ export const createDocument = async (req, res) => {
 };
 
 export const verifyDocument = async (req, res) => {
-export const verifyDocument = async (req, res) => {
     const client = await pool.connect();
     try {
         const { id } = req.params;
