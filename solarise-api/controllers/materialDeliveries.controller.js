@@ -22,9 +22,9 @@ export const getDeliveryByProject = async (req, res) => {
             ORDER BY md.delivered_at DESC, md.id DESC
         `, [projectId]);
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "No material delivery found for this project", data: [] });
-        }
+        // if (result.rowCount === 0) {
+        //     return res.status(404).json({ error: "No material delivery found for this project", data: [] });
+        // }
 
         res.status(200).json({ data: result.rows, primary: result.rows[0] });
     } catch (err) {

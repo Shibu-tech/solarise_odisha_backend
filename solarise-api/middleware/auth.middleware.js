@@ -39,15 +39,39 @@ export const optionalAuthenticateToken = (req, res, next) => {
 };
 
 // roles: array of allowed roles, e.g. ['admin', 'agent']
+// export const authorizeRoles = (...roles) => (req, res, next) => {
+//     if (!req.user) {
+//         return res.status(401).json({ error: "Not authenticated" });
+//     }
+//     const userRole = req.user.role;
+//     if (!userRole) {
+//         return res.status(403).json({ error: "User role not found on token" });
+//     }
+//     if (roles.length > 0 && !roles.includes(userRole)) {
+//         return res.status(403).json({ error: "Insufficient permissions" });
+//     }
+//     next();
+// };
+
+// export const authorizeRoles = (...roles) => (req, res, next) => {
+//     const userRole = req.user.role;  // Extracted from JWT
+//     if (!roles.includes(userRole)) {
+//         return res.status(403).json({ error: "Insufficient permissions" });
+//     }
+//     next();
+// };
+
 export const authorizeRoles = (...roles) => (req, res, next) => {
     if (!req.user) {
         return res.status(401).json({ error: "Not authenticated" });
     }
     const userRole = req.user.role;
+    console.log('🔐 Auth Check:', { userRole, allowed: roles, allowed_check: roles.includes(userRole) });
     if (!userRole) {
         return res.status(403).json({ error: "User role not found on token" });
     }
     if (roles.length > 0 && !roles.includes(userRole)) {
+        console.error('❌ Role mismatch:', { userRole, roles });
         return res.status(403).json({ error: "Insufficient permissions" });
     }
     next();
