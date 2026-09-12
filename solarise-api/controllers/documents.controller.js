@@ -229,20 +229,28 @@ export const createDocument = async (req, res) => {
 };
 
 export const verifyDocument = async (req, res) => {
+export const verifyDocument = async (req, res) => {
+    const client = await pool.connect();
     try {
         const { id } = req.params;
         const verified_by = req.body.verified_by || req.user?.userId || req.user?.id;
         if (!verified_by) {
             return res.status(400).json({ error: "verified_by (user ID) is required" });
         }
-        const result = await pool.query(`
+
+        await client.query("BEGIN");
+
+        // Update document status to 'verified'
+        const result = await client.query(`
             UPDATE documents
             SET status = 'verified', verified_by = $1, verified_at = now(), reject_reason = NULL
             WHERE id = $2 AND status IN ('uploaded', 'action_required', 'rejected')
             RETURNING *
         `, [verified_by, id]);
+
         if (result.rowCount === 0) {
-            const check = await pool.query("SELECT id, status FROM documents WHERE id = $1", [id]);
+            const check = await client.query("SELECT id, status FROM documents WHERE id = $1", [id]);
+            await client.query("ROLLBACK");
             if (check.rowCount === 0) {
                 return res.status(404).json({ error: "Document not found" });
             }
@@ -250,16 +258,99 @@ export const verifyDocument = async (req, res) => {
         }
 
         const verifiedDoc = result.rows[0];
-        notifyUsers({
-            targetRoles: ['admin', 'site_manager', 'agent'],
-            userId: verifiedDoc.uploaded_by,
-            title: `Document Verified`,
-            body: `Document "${verifiedDoc.doc_type?.replace(/_/g, ' ')}" verified by Document Desk.`
-        });
 
-        res.status(200).json({ message: "Document verified", data: verifiedDoc });
+        // Step 2: Check if there's an associated action with status 'doc_uploaded'
+        const consumerRes = await client.query(
+            "SELECT consumer_id FROM documents WHERE id = $1",
+            [id]
+        );
+        const consumer_id = consumerRes.rows[0]?.consumer_id;
+
+        if (consumer_id) {
+            const projectRes = await client.query(
+                "SELECT id FROM projects WHERE consumer_id = $1 LIMIT 1",
+                [consumer_id]
+            );
+
+            if (projectRes.rowCount > 0) {
+                const projectId = projectRes.rows[0].id;
+
+                // Check for action_required entry in 'doc_uploaded' status
+                const actionRes = await client.query(`
+                    SELECT ar.id, ar.assigned_to, ar.detail
+                    FROM action_required ar
+                    WHERE ar.project_id = $1 
+                    AND ar.status = 'doc_uploaded'
+                    ORDER BY ar.created_at DESC
+                    LIMIT 1
+                `, [projectId]);
+
+                if (actionRes.rowCount > 0) {
+                    const action = actionRes.rows[0];
+                    
+                    // Resolve the action
+                    await client.query(`
+                        UPDATE action_required
+                        SET status = 'resolved', resolved_by = $1, resolved_at = now()
+                        WHERE id = $2
+                    `, [verified_by, action.id]);
+
+                    // Update project status back to 'doc_verified'
+                    await client.query(`
+                        UPDATE projects
+                        SET current_status = 'doc_verified', updated_at = now()
+                        WHERE id = $1
+                    `, [projectId]);
+
+                    // Record in status_history
+                    await client.query(`
+                        INSERT INTO status_history (project_id, from_status, to_status, changed_by, remarks)
+                        VALUES ($1, 'action_required', 'doc_verified', $2, 'Document correction verified and action resolved')
+                    `, [projectId, verified_by]);
+
+                    // Send notification to the agent that their document was verified
+                    try {
+                        if (action.assigned_to) {
+                            notifyUsers({
+                                userId: action.assigned_to,
+                                projectId: projectId,
+                                title: `Document Correction Accepted ✓`,
+                                body: `Your corrected ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified and accepted. The action has been closed.`
+                            });
+                        }
+                    } catch { /* ignore notification errors */ }
+
+                    // Send notification to doc_team that action is resolved
+                    try {
+                        notifyUsers({
+                            targetRoles: ['admin', 'doc_team'],
+                            projectId: projectId,
+                            title: `Action Resolved: Document Verified ✓`,
+                            body: `Document correction for ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified. Action closed.`
+                        });
+                    } catch { /* ignore notification errors */ }
+                }
+            }
+        }
+
+        await client.query("COMMIT");
+
+        // Send general notification
+        try {
+            notifyUsers({
+                targetRoles: ['admin', 'site_manager', 'agent'],
+                userId: verifiedDoc.uploaded_by,
+                title: `Document Verified`,
+                body: `Document "${verifiedDoc.doc_type?.replace(/_/g, ' ')}" has been verified by Document Desk.`
+            });
+        } catch { /* ignore notification errors */ }
+
+        res.status(200).json({ message: "Document verified and action resolved", data: verifiedDoc });
     } catch (err) {
+        await client.query("ROLLBACK");
         res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
     }
 };
 
@@ -320,7 +411,7 @@ export const reuploadDocument = async (req, res) => {
 
         await client.query("BEGIN");
 
-        // Step 1: Get original document
+        // Step 1: Get original document and related project
         const original = await client.query(
             "SELECT consumer_id, doc_type FROM documents WHERE id = $1",
             [id]
@@ -330,6 +421,13 @@ export const reuploadDocument = async (req, res) => {
             return res.status(404).json({ error: "Original document not found" });
         }
         const { consumer_id, doc_type } = original.rows[0];
+
+        // Get the project associated with this consumer
+        const projectRes = await client.query(
+            "SELECT id FROM projects WHERE consumer_id = $1 LIMIT 1",
+            [consumer_id]
+        );
+        const projectId = projectRes.rowCount > 0 ? projectRes.rows[0].id : null;
 
         // If a file is uploaded via multipart/form-data
         if (req.file) {
@@ -355,12 +453,45 @@ export const reuploadDocument = async (req, res) => {
         );
         const newVersion = Number(versionResult.rows[0].max_version) + 1;
 
-        // Step 3: Insert new version
+        // Step 3: Insert new version (will be in 'uploaded' status)
         const insertResult = await client.query(`
-            INSERT INTO documents (consumer_id, doc_type, file_url, file_name, mime_type, geo_lat, geo_lng, uploaded_by, version)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            INSERT INTO documents (consumer_id, doc_type, file_url, file_name, mime_type, geo_lat, geo_lng, uploaded_by, version, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'uploaded')
             RETURNING *
         `, [consumer_id, doc_type, file_url, file_name || null, mime_type || null, geo_lat || null, geo_lng || null, uploaded_by, newVersion]);
+        
+        // Step 4: Update the associated action_required if it exists
+        if (projectId) {
+            // Check for open action related to this document correction
+            const actionRes = await client.query(`
+                SELECT ar.id, ar.status
+                FROM action_required ar
+                WHERE ar.project_id = $1 
+                AND ar.status IN ('open', 'doc_uploaded')
+                ORDER BY ar.created_at DESC
+                LIMIT 1
+            `, [projectId]);
+
+            if (actionRes.rowCount > 0) {
+                const action = actionRes.rows[0];
+                // Update action status to 'doc_uploaded' indicating document has been re-uploaded
+                await client.query(`
+                    UPDATE action_required
+                    SET status = 'doc_uploaded'
+                    WHERE id = $1
+                `, [action.id]);
+
+                // Send notification to doc_team to verify the re-uploaded document
+                try {
+                    notifyUsers({
+                        targetRoles: ['admin', 'doc_team'],
+                        projectId: projectId,
+                        title: `Document Re-uploaded for Verification: ${doc_type?.replace(/_/g, ' ')}`,
+                        body: `Agent has re-uploaded ${doc_type?.replace(/_/g, ' ')} (Version ${newVersion}). Please review and verify the document.`
+                    });
+                } catch { /* notification catch */ }
+            }
+        }
         
         await client.query("COMMIT");
 
@@ -368,14 +499,15 @@ export const reuploadDocument = async (req, res) => {
             notifyUsers({
                 targetRoles: ['admin', 'doc_team', 'site_manager'],
                 userId: uploaded_by,
+                projectId: projectId,
                 title: `Document Re-uploaded (v${newVersion})`,
-                body: `New version uploaded for ${doc_type?.replace(/_/g, ' ')}.`
+                body: `Your corrected ${doc_type?.replace(/_/g, ' ')} has been re-uploaded (Version ${newVersion}). Awaiting verification from Document Desk.`
             });
         } catch { /* ignore notification errors */ }
 
         const enrichedDoc = await attachPresignedUrls(insertResult.rows[0]);
         res.status(201).json({
-            message: `Document re-uploaded as version ${newVersion}`,
+            message: `Document re-uploaded as version ${newVersion} and awaiting verification`,
             data: enrichedDoc
         });
     } catch (err) {
@@ -421,10 +553,13 @@ export const flagDocument = async (req, res) => {
 
         await client.query("BEGIN");
 
-        // 1. Get document & project info
+        // 1. Get document & project info including the agent who uploaded it
         const docRes = await client.query(`
-            SELECT d.id, d.consumer_id, d.doc_type, p.id AS project_id, p.current_status
+            SELECT d.id, d.consumer_id, d.doc_type, d.uploaded_by, 
+                   u.first_name, u.last_name, u.role,
+                   p.id AS project_id, p.current_status
             FROM documents d
+            LEFT JOIN users u ON d.uploaded_by = u.id
             LEFT JOIN projects p ON p.consumer_id = d.consumer_id
             WHERE d.id = $1
         `, [id]);
@@ -435,8 +570,12 @@ export const flagDocument = async (req, res) => {
         }
 
         const doc = docRes.rows[0];
+        const uploadedByUserId = doc.uploaded_by;
+        const uploaderName = doc.first_name && doc.last_name 
+            ? `${doc.first_name} ${doc.last_name}` 
+            : 'Agent';
 
-        // Ensure valid user ID for FK constraint
+        // Ensure valid user ID for FK constraint (who is flagging the document)
         let validUserBy = req.user?.userId || req.user?.id || flagged_by;
         if (validUserBy) {
             const uCheck = await client.query("SELECT id FROM users WHERE id = $1", [validUserBy]);
@@ -477,11 +616,12 @@ export const flagDocument = async (req, res) => {
         // 3. Create entry in action_required if project exists
         let actionItem = null;
         if (doc.project_id) {
+            // Assign action to the agent who uploaded the document
             const actionRes = await client.query(`
-                INSERT INTO action_required (project_id, action_type, detail, raised_by, status)
-                VALUES ($1, $2, $3, $4, 'open')
+                INSERT INTO action_required (project_id, action_type, detail, raised_by, assigned_to, status)
+                VALUES ($1, $2, $3, $4, $5, 'open')
                 RETURNING *
-            `, [doc.project_id, finalActionType, detail, validUserBy]);
+            `, [doc.project_id, finalActionType, detail, validUserBy, uploadedByUserId]);
             actionItem = actionRes.rows[0];
 
             // 4. Update project current_status to 'action_required'
@@ -516,11 +656,22 @@ export const flagDocument = async (req, res) => {
         await client.query("COMMIT");
 
         try {
+            // Send notification to the agent who uploaded the document with specific instructions
+            if (uploadedByUserId) {
+                notifyUsers({
+                    userId: uploadedByUserId,
+                    projectId: doc.project_id || null,
+                    title: `Correction Required: ${doc.doc_type?.replace(/_/g, ' ')}`,
+                    body: `Document Desk has flagged your ${doc.doc_type?.replace(/_/g, ' ')} for correction. Reason: ${detail}. Please review and re-upload the correct document.`
+                });
+            }
+
+            // Also notify doc_team and admins about the flag
             notifyUsers({
-                targetRoles: ['admin', 'agent', 'doc_team', 'site_manager'],
+                targetRoles: ['admin', 'doc_team'],
                 projectId: doc.project_id || null,
                 title: `Document Flagged: ${doc.doc_type?.replace(/_/g, ' ')}`,
-                body: `Flagged by Document Desk. Reason: ${detail}`
+                body: `Document flagged and action assigned to ${uploaderName}. Reason: ${detail}`
             });
         } catch { /* notification catch */ }
 
