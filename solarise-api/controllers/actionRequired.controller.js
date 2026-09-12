@@ -5,7 +5,7 @@ import { notifyUsers } from "../utils/notificationHelper.js";
 export const getAllOpenActions = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT 
+            SELECT
                 ar.id,
                 ar.project_id,
                 ar.action_type,
@@ -34,6 +34,45 @@ export const getAllOpenActions = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// 1b. GET /api/actions/my-open-actions - Open actions assigned to the current user
+export const getMyOpenActions = async (req, res) => {
+    try {
+        const userId = req.user?.userId || req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: "User authentication required" });
+        }
+        const result = await pool.query(`
+            SELECT
+                ar.id,
+                ar.project_id,
+                ar.action_type,
+                ar.detail,
+                ar.status,
+                ar.raised_by,
+                u1.first_name || ' ' || u1.last_name AS raised_by_name,
+                ar.raised_at,
+                ar.assigned_to,
+                u2.first_name || ' ' || u2.last_name AS assigned_to_name,
+                ar.resolved_by,
+                u3.first_name || ' ' || u3.last_name AS resolved_by_name,
+                ar.resolved_at,
+                p.consumer_id,
+                p.current_status AS project_status
+            FROM action_required ar
+            JOIN projects p ON ar.project_id = p.id
+            LEFT JOIN users u1 ON ar.raised_by = u1.id
+            LEFT JOIN users u2 ON ar.assigned_to = u2.id
+            LEFT JOIN users u3 ON ar.resolved_by = u3.id
+            WHERE ar.assigned_to = $1 AND ar.status NOT IN ('resolved', 'cancelled')
+            ORDER BY ar.raised_at DESC
+        `, [userId]);
+        res.status(200).json({ count: result.rowCount, data: result.rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 
 // 2. GET /api/actions/project/:projectId - Actions for a project
 export const getActionsByProject = async (req, res) => {

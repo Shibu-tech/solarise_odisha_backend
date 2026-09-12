@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     getAllOpenActions,
+    getMyOpenActions,
     getActionsByProject,
     createAction,
     updateActionStatus,
@@ -18,7 +19,20 @@ const router = Router();
 
 /**
  * @swagger
+ * /api/actions/my-open-actions:
+ *   get:
+ *     summary: Get open actions assigned to current user
+ *     tags: [Actions]
+ *     responses:
+ *       200:
+ *         description: List of my open actions
+ */
+router.get("/my-open-actions", authenticateToken, authorizeRoles('admin', 'agent', 'site_manager', 'doc_team', 'accounts'), getMyOpenActions);
+
+/**
+ * @swagger
  * /api/actions/overdue:
+
  *   get:
  *     summary: Get overdue action items
  *     tags: [Actions]
