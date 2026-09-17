@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import { notifyUsers } from "../utils/notificationHelper.js";
+import { attachPresignedUrls } from "../services/s3Storage.js";
 
 // 1. GET /api/actions - List all open actions
 export const getAllOpenActions = async (req, res) => {
@@ -20,16 +21,41 @@ export const getAllOpenActions = async (req, res) => {
                 u3.first_name || ' ' || u3.last_name AS resolved_by_name,
                 ar.resolved_at,
                 p.consumer_id,
-                p.current_status AS project_status
+                p.current_status AS project_status,
+                TRIM(CONCAT(c.first_name, ' ', COALESCE(c.last_name, ''))) AS consumer_name,
+                c.consumer_number,
+                c.phone_primary,
+                d.id AS document_id,
+                d.doc_type,
+                d.file_url,
+                d.file_name,
+                d.status AS document_status,
+                d.version AS document_version
             FROM action_required ar
             JOIN projects p ON ar.project_id = p.id
+            LEFT JOIN consumers c ON p.consumer_id = c.id
             LEFT JOIN users u1 ON ar.raised_by = u1.id
             LEFT JOIN users u2 ON ar.assigned_to = u2.id
             LEFT JOIN users u3 ON ar.resolved_by = u3.id
+            LEFT JOIN LATERAL (
+                SELECT id, doc_type, file_url, file_name, status, version
+                FROM documents
+                WHERE consumer_id = p.consumer_id
+                ORDER BY (
+                    CASE 
+                        WHEN ar.action_type = 'electric_bill_name_correction' AND doc_type = 'electric_bill' THEN 1
+                        WHEN ar.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') AND doc_type = 'bank_passbook' THEN 1
+                        WHEN ar.action_type = 'ownership_transfer' AND doc_type IN ('land_ror', 'aadhaar_card') THEN 1
+                        ELSE 2
+                    END
+                ), version DESC
+                LIMIT 1
+            ) d ON true
             WHERE ar.status NOT IN ('resolved', 'cancelled')
             ORDER BY ar.raised_at DESC
         `);
-        res.status(200).json({ count: result.rowCount, data: result.rows });
+        const enrichedRows = await attachPresignedUrls(result.rows);
+        res.status(200).json({ count: result.rowCount, data: enrichedRows });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -58,16 +84,41 @@ export const getMyOpenActions = async (req, res) => {
                 u3.first_name || ' ' || u3.last_name AS resolved_by_name,
                 ar.resolved_at,
                 p.consumer_id,
-                p.current_status AS project_status
+                p.current_status AS project_status,
+                TRIM(CONCAT(c.first_name, ' ', COALESCE(c.last_name, ''))) AS consumer_name,
+                c.consumer_number,
+                c.phone_primary,
+                d.id AS document_id,
+                d.doc_type,
+                d.file_url,
+                d.file_name,
+                d.status AS document_status,
+                d.version AS document_version
             FROM action_required ar
             JOIN projects p ON ar.project_id = p.id
+            LEFT JOIN consumers c ON p.consumer_id = c.id
             LEFT JOIN users u1 ON ar.raised_by = u1.id
             LEFT JOIN users u2 ON ar.assigned_to = u2.id
             LEFT JOIN users u3 ON ar.resolved_by = u3.id
+            LEFT JOIN LATERAL (
+                SELECT id, doc_type, file_url, file_name, status, version
+                FROM documents
+                WHERE consumer_id = p.consumer_id
+                ORDER BY (
+                    CASE 
+                        WHEN ar.action_type = 'electric_bill_name_correction' AND doc_type = 'electric_bill' THEN 1
+                        WHEN ar.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') AND doc_type = 'bank_passbook' THEN 1
+                        WHEN ar.action_type = 'ownership_transfer' AND doc_type IN ('land_ror', 'aadhaar_card') THEN 1
+                        ELSE 2
+                    END
+                ), version DESC
+                LIMIT 1
+            ) d ON true
             WHERE ar.assigned_to = $1 AND ar.status NOT IN ('resolved', 'cancelled')
             ORDER BY ar.raised_at DESC
         `, [userId]);
-        res.status(200).json({ count: result.rowCount, data: result.rows });
+        const enrichedRows = await attachPresignedUrls(result.rows);
+        res.status(200).json({ count: result.rowCount, data: enrichedRows });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -28,40 +28,51 @@ export const PendingCorrectionsPanel = ({ userId }) => {
       setLoading(true);
       setError(null);
 
-      // Get all open actions assigned to current user
-      const actionsRes = await api.get('/api/actions');
-      const allActions = actionsRes.data?.data || [];
+      // Call my-open-actions which returns enriched actions with document and consumer info
+      let actions = [];
+      try {
+        const myActionsRes = await api.get('/api/actions/my-open-actions');
+        actions = myActionsRes.data?.data || [];
+      } catch {
+        const allRes = await api.get('/api/actions');
+        actions = allRes.data?.data || [];
+      }
 
-      // Filter for document correction actions
-      const correctionActions = allActions.filter(
-        (action) => action.assigned_to === userId && 
-                   action.status !== 'resolved' &&
-                   action.status !== 'cancelled' &&
-                   ['electric_bill_name_correction', 'bank_passbook_name_correction', 'bank_passbook_update', 'ownership_transfer', 'commercial_to_domestic', 'other'].includes(action.action_type)
+      // Filter for correction actions
+      const correctionActions = actions.filter(
+        (action) =>
+          action.status !== 'resolved' &&
+          action.status !== 'cancelled' &&
+          ['electric_bill_name_correction', 'bank_passbook_name_correction', 'bank_passbook_update', 'ownership_transfer', 'commercial_to_domestic', 'other'].includes(action.action_type) &&
+          (!userId || !action.assigned_to || Number(action.assigned_to) === Number(userId))
       );
 
       setPendingActions(correctionActions);
 
-      // Fetch document details for each action
+      // Build document mapping for each action
       const docMap = {};
       for (const action of correctionActions) {
-        if (action.project_id) {
+        if (action.document_id) {
+          docMap[action.id] = {
+            id: action.document_id,
+            doc_type: action.doc_type || 'document',
+            version: action.document_version || 1,
+            status: action.document_status || 'action_required',
+            file_url: action.presigned_url || action.file_url,
+            presigned_url: action.presigned_url,
+            file_name: action.file_name,
+            consumer_name: action.consumer_name,
+            uploaded_at: action.raised_at,
+          };
+        } else if (action.consumer_id) {
           try {
-            const projectRes = await api.get(`/api/projects/${action.project_id}`);
-            const project = projectRes.data?.data;
-            if (project) {
-              // Get documents for this project's consumer
-              const docsRes = await api.get(`/api/documents/consumer/${project.consumer_id}`);
-              const docs = docsRes.data?.data || [];
-              // Find the most recent document that matches the action type
-              const relevantDoc = docs.find((doc) => doc.status === 'action_required' || doc.status === 'uploaded');
-              if (relevantDoc) {
-                docMap[action.id] = relevantDoc;
-              }
+            const docsRes = await api.get(`/api/documents/consumer/${action.consumer_id}`);
+            const docs = docsRes.data?.data || [];
+            const relevantDoc = docs.find((d) => d.status === 'action_required' || d.status === 'uploaded');
+            if (relevantDoc) {
+              docMap[action.id] = relevantDoc;
             }
-          } catch (err) {
-            console.error(`Error fetching document for action ${action.id}:`, err);
-          }
+          } catch { /* ignore fallback error */ }
         }
       }
       setDocuments(docMap);
@@ -74,22 +85,24 @@ export const PendingCorrectionsPanel = ({ userId }) => {
   };
 
   const handleReupload = (documentId, action) => {
-    const doc = documents[action.id];
-    if (doc) {
-      setSelectedDocument({ ...doc, action });
-      setReuploadModalOpen(true);
-    }
+    const doc = documents[action.id] || { id: documentId, doc_type: action.action_type };
+    setSelectedDocument({ ...doc, action });
+    setReuploadModalOpen(true);
   };
 
   const handleReuploadSubmit = async (documentId, formData) => {
     try {
       setUploading(true);
-      const res = await api.post(`/api/documents/${documentId}/reupload`, formData, {
+      if (selectedDocument?.action?.id) {
+        formData.append('action_id', selectedDocument.action.id);
+      }
+      const targetDocId = documentId || selectedDocument?.id;
+      const res = await api.post(`/api/documents/${targetDocId}/reupload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       if (res.status === 201) {
-        alert('Document re-uploaded successfully! Please wait for Document Team verification.');
+        alert('✓ Document re-uploaded successfully! Please wait for Document Team verification.');
         setReuploadModalOpen(false);
         await fetchPendingCorrections();
       }

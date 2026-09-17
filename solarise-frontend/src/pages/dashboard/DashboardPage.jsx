@@ -5,6 +5,7 @@ import RevenueTrendChart from '../../components/dashboard/RevenueTrendChart';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import QuickActions from '../../components/dashboard/QuickActions';
 import IncomingTransfers from '../../components/dashboard/IncomingTransfers';
+import CorrectionAlertBanner from '../../components/dashboard/CorrectionAlertBanner';
 
 const DashboardPage = () => {
   return (
@@ -50,6 +51,11 @@ const DashboardPage = () => {
           </span>
         </div>
       </header>
+
+      {/* Workflow Alerts: Document Corrections & Verification Queue */}
+      <section className="relative z-10">
+        <CorrectionAlertBanner />
+      </section>
 
       {/* 0. Incoming Transfers Alert */}
       <section className="relative z-10">

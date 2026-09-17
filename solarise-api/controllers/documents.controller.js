@@ -261,14 +261,14 @@ export const verifyDocument = async (req, res) => {
 
         // Step 2: Check if there's an associated action that needs to be resolved
         const consumerRes = await client.query(
-            "SELECT consumer_id FROM documents WHERE id = $1",
+            "SELECT consumer_id, doc_type FROM documents WHERE id = $1",
             [id]
         );
-        const consumer_id = consumerRes.rows[0]?.consumer_id;
+        const { consumer_id, doc_type } = consumerRes.rows[0] || {};
 
         if (consumer_id) {
             const projectRes = await client.query(
-                "SELECT id, current_status FROM projects WHERE consumer_id = $1 LIMIT 1",
+                "SELECT id, current_status FROM projects WHERE consumer_id = $1 ORDER BY id DESC LIMIT 1",
                 [consumer_id]
             );
 
@@ -276,15 +276,22 @@ export const verifyDocument = async (req, res) => {
                 const projectId = projectRes.rows[0].id;
                 const currentProjectStatus = projectRes.rows[0].current_status;
 
-                // Check for action_required entry with status 'doc_uploaded' or 'open' (for any pending corrections)
+                // Check for action_required entry with status 'doc_uploaded' or 'open' prioritized by doc_type
                 const actionRes = await client.query(`
                     SELECT ar.id, ar.assigned_to, ar.detail, ar.status, ar.action_type
                     FROM action_required ar
                     WHERE ar.project_id = $1 
-                    AND ar.status IN ('doc_uploaded', 'open')
-                    ORDER BY ar.created_at DESC
+                    AND ar.status IN ('doc_uploaded', 'open', 'in_review')
+                    ORDER BY (
+                        CASE 
+                            WHEN $2 = 'electric_bill' AND ar.action_type = 'electric_bill_name_correction' THEN 1
+                            WHEN $2 = 'bank_passbook' AND ar.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
+                            WHEN $2 IN ('land_ror', 'aadhaar_card') AND ar.action_type = 'ownership_transfer' THEN 1
+                            ELSE 2
+                        END
+                    ), ar.created_at DESC
                     LIMIT 1
-                `, [projectId]);
+                `, [projectId, doc_type]);
 
                 if (actionRes.rowCount > 0) {
                     const action = actionRes.rows[0];
@@ -300,19 +307,32 @@ export const verifyDocument = async (req, res) => {
                     if (resolveRes.rowCount > 0) {
                         resolvedAction = resolveRes.rows[0];
 
-                        // Update project status back to 'doc_verified'
-                        await client.query(`
-                            UPDATE projects
-                            SET current_status = 'doc_verified', updated_at = now()
-                            WHERE id = $1
-                        `, [projectId]);
+                        // Check if any other open/doc_uploaded actions remain on this project
+                        const remainingActionsRes = await client.query(`
+                            SELECT COUNT(*)::int AS remaining_count
+                            FROM action_required
+                            WHERE project_id = $1 
+                            AND status IN ('open', 'doc_uploaded', 'in_review')
+                            AND id != $2
+                        `, [projectId, action.id]);
 
-                        // Record in status_history
-                        const fromStatus = currentProjectStatus || 'action_required';
-                        await client.query(`
-                            INSERT INTO status_history (project_id, from_status, to_status, changed_by, remarks)
-                            VALUES ($1, $2, 'doc_verified', $3, 'Document correction verified and action resolved')
-                        `, [projectId, fromStatus, verified_by]);
+                        const remainingCount = remainingActionsRes.rows[0]?.remaining_count || 0;
+
+                        if (remainingCount === 0) {
+                            // Update project status back to 'doc_verified'
+                            await client.query(`
+                                UPDATE projects
+                                SET current_status = 'doc_verified', updated_at = now()
+                                WHERE id = $1
+                            `, [projectId]);
+
+                            // Record in status_history
+                            const fromStatus = currentProjectStatus || 'action_required';
+                            await client.query(`
+                                INSERT INTO status_history (project_id, from_status, to_status, changed_by, remarks)
+                                VALUES ($1, $2, 'doc_verified', $3, 'Document correction verified and all actions resolved')
+                            `, [projectId, fromStatus, verified_by]);
+                        }
 
                         // Send notification to the agent that their document was verified
                         try {
@@ -478,15 +498,37 @@ export const reuploadDocument = async (req, res) => {
         
         // Step 4: Update the associated action_required if it exists
         if (projectId) {
-            // Check for open action related to this document correction
-            const actionRes = await client.query(`
-                SELECT ar.id, ar.status
-                FROM action_required ar
-                WHERE ar.project_id = $1 
-                AND ar.status IN ('open', 'doc_uploaded')
-                ORDER BY ar.created_at DESC
-                LIMIT 1
-            `, [projectId]);
+            const actionIdParam = req.body.action_id;
+            let actionQuery;
+            let actionParams;
+
+            if (actionIdParam) {
+                actionQuery = `
+                    SELECT ar.id, ar.status
+                    FROM action_required ar
+                    WHERE ar.id = $1 AND ar.status IN ('open', 'doc_uploaded')
+                `;
+                actionParams = [actionIdParam];
+            } else {
+                actionQuery = `
+                    SELECT ar.id, ar.status
+                    FROM action_required ar
+                    WHERE ar.project_id = $1 
+                    AND ar.status IN ('open', 'doc_uploaded')
+                    ORDER BY (
+                        CASE 
+                            WHEN $2 = 'electric_bill' AND ar.action_type = 'electric_bill_name_correction' THEN 1
+                            WHEN $2 = 'bank_passbook' AND ar.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
+                            WHEN $2 IN ('land_ror', 'aadhaar_card') AND ar.action_type = 'ownership_transfer' THEN 1
+                            ELSE 2
+                        END
+                    ), ar.created_at DESC
+                    LIMIT 1
+                `;
+                actionParams = [projectId, doc_type];
+            }
+
+            const actionRes = await client.query(actionQuery, actionParams);
 
             if (actionRes.rowCount > 0) {
                 const action = actionRes.rows[0];
@@ -576,7 +618,13 @@ export const flagDocument = async (req, res) => {
                    p.id AS project_id, p.current_status
             FROM documents d
             LEFT JOIN users u ON d.uploaded_by = u.id
-            LEFT JOIN projects p ON p.consumer_id = d.consumer_id
+            LEFT JOIN LATERAL (
+                SELECT id, current_status 
+                FROM projects 
+                WHERE consumer_id = d.consumer_id 
+                ORDER BY id DESC 
+                LIMIT 1
+            ) p ON true
             WHERE d.id = $1
         `, [id]);
 
@@ -744,5 +792,97 @@ export const getS3Health = async (req, res) => {
             code: err.name || err.Code,
             tip: "Verify AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and AWS_S3_BUCKET in your .env file.",
         });
+    }
+};
+
+export const getVerificationQueue = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                d.id,
+                d.consumer_id,
+                TRIM(CONCAT(c.first_name, ' ', COALESCE(c.last_name, ''))) AS consumer_name,
+                c.consumer_number,
+                c.phone_primary,
+                d.doc_type,
+                d.file_url,
+                d.file_name,
+                d.mime_type,
+                d.geo_lat,
+                d.geo_lng,
+                d.status,
+                d.version,
+                d.uploaded_by,
+                TRIM(CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) AS uploaded_by_name,
+                d.uploaded_at,
+                d.reject_reason,
+                prev.id AS prev_id,
+                prev.file_url AS prev_file_url,
+                prev.file_name AS prev_file_name,
+                prev.version AS prev_version,
+                prev.uploaded_at AS prev_uploaded_at,
+                prev.reject_reason AS prev_reject_reason,
+                p.id AS project_id,
+                ar.id AS action_id,
+                ar.action_type,
+                ar.detail AS action_detail,
+                ar.status AS action_status,
+                ar.raised_at AS action_raised_at
+            FROM documents d
+            JOIN consumers c ON d.consumer_id = c.id
+            LEFT JOIN users u ON d.uploaded_by = u.id
+            LEFT JOIN LATERAL (
+                SELECT id, file_url, file_name, version, uploaded_at, reject_reason
+                FROM documents pd
+                WHERE pd.consumer_id = d.consumer_id 
+                  AND pd.doc_type = d.doc_type 
+                  AND pd.version < d.version
+                ORDER BY pd.version DESC
+                LIMIT 1
+            ) prev ON true
+            LEFT JOIN LATERAL (
+                SELECT id 
+                FROM projects 
+                WHERE consumer_id = d.consumer_id 
+                ORDER BY id DESC 
+                LIMIT 1
+            ) p ON true
+            LEFT JOIN LATERAL (
+                SELECT id, action_type, detail, status, raised_at
+                FROM action_required
+                WHERE project_id = p.id
+                  AND status IN ('open', 'doc_uploaded', 'in_review')
+                ORDER BY (
+                    CASE 
+                        WHEN d.doc_type = 'electric_bill' AND action_type = 'electric_bill_name_correction' THEN 1
+                        WHEN d.doc_type = 'bank_passbook' AND action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
+                        WHEN d.doc_type IN ('land_ror', 'aadhaar_card') AND action_type = 'ownership_transfer' THEN 1
+                        ELSE 2
+                    END
+                ), created_at DESC
+                LIMIT 1
+            ) ar ON true
+            WHERE (d.status = 'uploaded' AND d.version > 1) OR (d.status = 'action_required')
+            ORDER BY d.uploaded_at DESC
+        `;
+        const result = await pool.query(query);
+        const enrichedRows = await attachPresignedUrls(result.rows);
+        
+        // Also attach presigned url for prev_file_url if it exists
+        for (const row of enrichedRows) {
+            if (row.prev_file_url && row.prev_file_url.startsWith('s3://')) {
+                try {
+                    row.prev_presigned_url = await getPresignedDownloadUrl(row.prev_file_url);
+                } catch {
+                    row.prev_presigned_url = row.prev_file_url;
+                }
+            } else {
+                row.prev_presigned_url = row.prev_file_url;
+            }
+        }
+
+        res.status(200).json({ count: enrichedRows.length, data: enrichedRows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };

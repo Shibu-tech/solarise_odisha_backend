@@ -27,58 +27,44 @@ export const VerificationQueuePanel = () => {
       setLoading(true);
       setError(null);
 
-      // Get all documents with status 'uploaded' (re-uploaded versions awaiting verification)
-      const docsRes = await api.get('/api/documents');
-      const allDocs = docsRes.data?.data || [];
+      // Call optimized verification queue endpoint
+      const queueRes = await api.get('/api/documents/verification-queue');
+      const docs = queueRes.data?.data || [];
+      setDocuments(docs);
 
-      // Filter for documents that are 'uploaded' and have version > 1 (re-uploads) OR status 'action_required'
-      const pendingVerification = allDocs.filter(
-        (doc) => doc.status === 'uploaded' && doc.version > 1
-      );
-
-      setDocuments(pendingVerification);
-
-      // Fetch previous versions and action details
       const prevVersionMap = {};
       const actionMap = {};
 
-      for (const doc of pendingVerification) {
-        try {
-          // Get all versions of this document to find previous version
-          const consumerDocsRes = await api.get(`/api/documents/consumer/${doc.consumer_id}`);
-          const consumerDocs = consumerDocsRes.data?.data || [];
-          const previousDoc = consumerDocs.find(
-            (d) => d.doc_type === doc.doc_type && d.version === (doc.version - 1)
-          );
-          if (previousDoc) {
-            prevVersionMap[doc.id] = previousDoc;
-          }
-
-          // Get action for this project
-          if (doc.consumer_id) {
-            const projectRes = await api.get(`/api/projects`);
-            const projects = projectRes.data?.data || [];
-            const project = projects.find((p) => p.consumer_id === doc.consumer_id);
-            if (project) {
-              const actionsRes = await api.get(`/api/actions/project/${project.id}`);
-              const projectActions = actionsRes.data?.data || [];
-              const correctionAction = projectActions.find(
-                (a) => a.status === 'doc_uploaded' || a.status === 'open'
-              );
-              if (correctionAction) {
-                actionMap[doc.id] = correctionAction;
-              }
-            }
-          }
-        } catch (err) {
-          console.error(`Error fetching details for document ${doc.id}:`, err);
+      docs.forEach((doc) => {
+        if (doc.prev_id) {
+          prevVersionMap[doc.id] = {
+            id: doc.prev_id,
+            file_url: doc.prev_file_url,
+            prev_presigned_url: doc.prev_presigned_url,
+            file_name: doc.prev_file_name,
+            version: doc.prev_version,
+            uploaded_at: doc.prev_uploaded_at,
+            reject_reason: doc.prev_reject_reason,
+          };
         }
-      }
+        if (doc.action_id) {
+          actionMap[doc.id] = {
+            id: doc.action_id,
+            action_type: doc.action_type,
+            detail: doc.action_detail,
+            status: doc.action_status,
+            raised_at: doc.action_raised_at,
+          };
+        }
+      });
 
       setPreviousVersions(prevVersionMap);
       setActions(actionMap);
+      if (docs.length > 0) {
+        setSelectedDocId((prev) => (prev && docs.some((d) => d.id === prev) ? prev : docs[0].id));
+      }
     } catch (err) {
-      console.error('Error fetching documents:', err);
+      console.error('Error fetching verification queue:', err);
       setError('Failed to load documents for verification');
     } finally {
       setLoading(false);

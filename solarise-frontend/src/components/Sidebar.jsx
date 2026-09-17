@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const roleColorMap = {
   admin: 'bg-rose-50 text-rose-700 border-rose-200',
@@ -14,10 +15,45 @@ const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const [correctionCount, setCorrectionCount] = useState(0);
+  const [verificationCount, setVerificationCount] = useState(0);
+
   const role = user?.role || 'agent';
   const firstName = user?.first_name || user?.firstName || 'User';
   const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.firstName || 'Authorized User';
   const firstLetter = (firstName || 'U').charAt(0).toUpperCase();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCounts = async () => {
+      try {
+        if (role === 'agent' || role === 'admin') {
+          const res = await api.get('/api/actions/my-open-actions').catch(() => null);
+          if (res?.data?.data && isMounted) {
+            const corrections = res.data.data.filter(a =>
+              ['open', 'doc_uploaded'].includes(a.status) &&
+              ['electric_bill_name_correction', 'bank_passbook_name_correction', 'bank_passbook_update', 'ownership_transfer', 'commercial_to_domestic', 'other'].includes(a.action_type)
+            );
+            setCorrectionCount(corrections.length);
+          }
+        }
+        if (role === 'doc_team' || role === 'admin') {
+          const res = await api.get('/api/documents/verification-queue').catch(() => null);
+          if (res?.data?.data && isMounted) {
+            setVerificationCount(res.data.data.length);
+          }
+        }
+      } catch { /* silent error */ }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [role, user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -53,6 +89,30 @@ const Sidebar = ({ isOpen, onClose }) => {
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'Pending Corrections',
+        path: '/pending-corrections',
+        roles: ['agent', 'admin'],
+        badge: correctionCount,
+        badgeColor: 'bg-amber-500',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'Verification Queue',
+        path: '/verification-queue',
+        roles: ['admin', 'doc_team'],
+        badge: verificationCount,
+        badgeColor: 'bg-blue-600',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
         ),
       },
@@ -146,15 +206,22 @@ const Sidebar = ({ isOpen, onClose }) => {
               end
               onClick={() => onClose && onClose()}
               className={({ isActive }) => `
-                flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all
+                flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all
                 ${isActive
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }
               `}
             >
-              <span className="text-base">{item.icon}</span>
-              <span className="capitalize">{item.name}</span>
+              <div className="flex items-center space-x-3 truncate">
+                <span className="text-base shrink-0">{item.icon}</span>
+                <span className="capitalize truncate">{item.name}</span>
+              </div>
+              {item.badge > 0 && (
+                <span className={`ml-2 px-2 py-0.5 text-[10px] font-extrabold text-white rounded-full shrink-0 ${item.badgeColor || 'bg-rose-500'}`}>
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

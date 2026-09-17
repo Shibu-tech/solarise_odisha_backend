@@ -13,6 +13,7 @@ import {
     flagDocument,
     getDocumentStatusSummary,
     getS3Health,
+    getVerificationQueue,
 } from "../controllers/documents.controller.js";
 import { authenticateToken, authorizeRoles } from "../middleware/auth.middleware.js";
 import { documentUpload } from "../middleware/upload.middleware.js";
@@ -25,6 +26,8 @@ const router = Router();
  *   name: Documents
  *   description: Document upload, verification & management
  */
+
+router.get("/verification-queue", authenticateToken, authorizeRoles('admin', 'doc_team', 'site_manager'), getVerificationQueue);
 
 /**
  * @swagger

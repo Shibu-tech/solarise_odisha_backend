@@ -123,9 +123,9 @@ export const DocumentVerificationPanel = ({
               </p>
             </div>
             <div className="p-4">
-              {previousVersion.file_url ? (
+              {(previousVersion.prev_presigned_url || previousVersion.presigned_url || previousVersion.file_url) ? (
                 <a
-                  href={previousVersion.file_url}
+                  href={previousVersion.prev_presigned_url || previousVersion.presigned_url || previousVersion.file_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold text-gray-700 transition"
@@ -137,7 +137,7 @@ export const DocumentVerificationPanel = ({
               )}
               {previousVersion.reject_reason && (
                 <div className="mt-3 p-3 bg-red-50 rounded border border-red-200">
-                  <p className="text-xs font-semibold text-red-800 mb-1">Rejection Reason:</p>
+                  <p className="text-xs font-semibold text-red-800 mb-1">Flag/Rejection Reason:</p>
                   <p className="text-sm text-red-700">{previousVersion.reject_reason}</p>
                 </div>
               )}
@@ -153,9 +153,9 @@ export const DocumentVerificationPanel = ({
             </p>
           </div>
           <div className="p-4">
-            {document.file_url ? (
+            {(document.presigned_url || document.file_url) ? (
               <a
-                href={document.file_url}
+                href={document.presigned_url || document.file_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 rounded-lg text-sm font-semibold text-emerald-700 transition"
@@ -169,7 +169,7 @@ export const DocumentVerificationPanel = ({
               <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
                 <p className="text-xs font-semibold text-blue-800 mb-1">📍 Location Metadata:</p>
                 <p className="text-sm text-blue-700">
-                  {document.geo_lat.toFixed(6)}, {document.geo_lng.toFixed(6)}
+                  {Number(document.geo_lat).toFixed(6)}, {Number(document.geo_lng).toFixed(6)}
                 </p>
               </div>
             )}

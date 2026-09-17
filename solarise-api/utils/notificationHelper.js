@@ -19,7 +19,7 @@ export const notifyUsers = async ({ userId, targetRoles, projectId, title, body 
 
         if (targetRoles && targetRoles.length > 0) {
             const roleUsers = await pool.query(
-                "SELECT id FROM users WHERE role = ANY($1::varchar[]) AND is_active = TRUE",
+                "SELECT id FROM users WHERE role::text = ANY($1::text[]) AND is_active = TRUE",
                 [targetRoles]
             );
             roleUsers.rows.forEach((u) => {
