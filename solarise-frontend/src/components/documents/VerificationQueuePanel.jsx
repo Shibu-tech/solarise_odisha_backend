@@ -74,7 +74,7 @@ export const VerificationQueuePanel = () => {
   const handleVerify = async (documentId) => {
     try {
       setProcessing(true);
-      const res = await api.patch(`/api/documents/${documentId}/verify`, {});
+      const res = await api.patch(`/documents/${documentId}/verify`, {});
 
       if (res.status === 200) {
         alert('✓ Document verified successfully! Correction action has been resolved.');
@@ -92,7 +92,7 @@ export const VerificationQueuePanel = () => {
   const handleReject = async (documentId, rejectReason) => {
     try {
       setProcessing(true);
-      const res = await api.patch(`/api/documents/${documentId}/reject`, {
+      const res = await api.patch(`/documents/${documentId}/reject`, {
         reject_reason: rejectReason
       });
 
@@ -159,8 +159,8 @@ export const VerificationQueuePanel = () => {
                 key={doc.id}
                 onClick={() => setSelectedDocId(doc.id)}
                 className={`w-full text-left p-3 rounded-lg border-2 transition ${selectedDocId === doc.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-blue-300'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 bg-white hover:border-blue-300'
                   }`}
               >
                 <p className="font-semibold text-gray-900 text-sm">

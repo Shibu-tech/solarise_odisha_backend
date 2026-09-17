@@ -27,7 +27,7 @@ const CorrectionAlertBanner = () => {
           }
         }
         if (role === 'doc_team' || role === 'admin') {
-          const res = await api.get('/api/documents/verification-queue').catch(() => null);
+          const res = await api.get('/documents/verification-queue').catch(() => null);
           if (res?.data?.data && isMounted) {
             setVerificationQueue(res.data.data);
           }
