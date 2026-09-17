@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import { notifyUsers } from "../utils/notificationHelper.js";
+import { resolveActionType } from "../utils/workflowHelpers.js";
 import { attachPresignedUrls, checkS3Health, deleteFileFromS3, getFileStreamFromS3, getPresignedDownloadUrl, uploadFileToS3 } from "../services/s3Storage.js";
 
 // GET /api/documents - List all documents (filtered by role)
@@ -344,7 +345,9 @@ export const verifyDocument = async (req, res) => {
                                     body: `Your corrected ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified and accepted. The action has been closed.`
                                 });
                             }
-                        } catch { /* ignore notification errors */ }
+                        } catch (err) {
+                            console.error("Notification error:", err);
+                        }
 
                         // Send notification to doc_team that action is resolved
                         try {
@@ -354,7 +357,9 @@ export const verifyDocument = async (req, res) => {
                                 title: `Action Resolved: Document Verified ✓`,
                                 body: `Document correction for ${verifiedDoc.doc_type?.replace(/_/g, ' ')} has been verified. Action closed.`
                             });
-                        } catch { /* ignore notification errors */ }
+                        } catch (err) {
+                            console.error("Notification error:", err);
+                        }
                     }
                 }
             }
@@ -547,7 +552,9 @@ export const reuploadDocument = async (req, res) => {
                         title: `Document Re-uploaded for Verification: ${doc_type?.replace(/_/g, ' ')}`,
                         body: `Agent has re-uploaded ${doc_type?.replace(/_/g, ' ')} (Version ${newVersion}). Please review and verify the document.`
                     });
-                } catch { /* notification catch */ }
+                } catch (err) {
+                    console.error("Notification error:", err);
+                }
             }
         }
         
@@ -661,13 +668,7 @@ export const flagDocument = async (req, res) => {
             'other'
         ];
 
-        let finalActionType = action_type;
-        if (!finalActionType || !VALID_ACTION_TYPES.includes(finalActionType)) {
-            if (doc.doc_type === 'electric_bill') finalActionType = 'electric_bill_name_correction';
-            else if (doc.doc_type === 'bank_passbook') finalActionType = 'bank_passbook_name_correction';
-            else if (['land_ror', 'aadhaar_card'].includes(doc.doc_type)) finalActionType = 'ownership_transfer';
-            else finalActionType = 'other';
-        }
+        let finalActionType = resolveActionType(doc.doc_type, action_type);
 
         // 2. Update document status to 'action_required'
         const updatedDoc = await client.query(`
