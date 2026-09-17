@@ -66,7 +66,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
           };
         } else if (action.consumer_id) {
           try {
-            const docsRes = await api.get(`/api/documents/consumer/${action.consumer_id}`);
+            const docsRes = await api.get(`/documents/consumer/${action.consumer_id}`);
             const docs = docsRes.data?.data || [];
             const relevantDoc = docs.find((d) => d.status === 'action_required' || d.status === 'uploaded');
             if (relevantDoc) {
