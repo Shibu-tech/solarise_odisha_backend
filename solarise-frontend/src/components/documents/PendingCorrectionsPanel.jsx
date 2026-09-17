@@ -31,10 +31,10 @@ export const PendingCorrectionsPanel = ({ userId }) => {
       // Call my-open-actions which returns enriched actions with document and consumer info
       let actions = [];
       try {
-        const myActionsRes = await api.get('/api/actions/my-open-actions');
+        const myActionsRes = await api.get('/actions/my-open-actions');
         actions = myActionsRes.data?.data || [];
       } catch {
-        const allRes = await api.get('/api/actions');
+        const allRes = await api.get('/actions');
         actions = allRes.data?.data || [];
       }
 
@@ -66,7 +66,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
           };
         } else if (action.consumer_id) {
           try {
-            const docsRes = await api.get(`/api/documents/consumer/${action.consumer_id}`);
+            const docsRes = await api.get(`/documents/consumer/${action.consumer_id}`);
             const docs = docsRes.data?.data || [];
             const relevantDoc = docs.find((d) => d.status === 'action_required' || d.status === 'uploaded');
             if (relevantDoc) {
@@ -97,7 +97,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
         formData.append('action_id', selectedDocument.action.id);
       }
       const targetDocId = documentId || selectedDocument?.id;
-      const res = await api.post(`/api/documents/${targetDocId}/reupload`, formData, {
+      const res = await api.post(`/documents/${targetDocId}/reupload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 

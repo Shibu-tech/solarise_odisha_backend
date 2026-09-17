@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     const fetchCounts = async () => {
       try {
         if (role === 'agent' || role === 'admin') {
-          const res = await api.get('/api/actions/my-open-actions').catch(() => null);
+          const res = await api.get('/actions/my-open-actions').catch(() => null);
           if (res?.data?.data && isMounted) {
             const corrections = res.data.data.filter(a =>
               ['open', 'doc_uploaded'].includes(a.status) &&
