@@ -803,7 +803,7 @@ export const getVerificationQueue = async (req, res) => {
                 d.id,
                 d.consumer_id,
                 TRIM(CONCAT(c.first_name, ' ', COALESCE(c.last_name, ''))) AS consumer_name,
-                c.consumer_number,
+                c.electric_consumer_no AS consumer_number,
                 c.phone_primary,
                 d.doc_type,
                 d.file_url,
@@ -849,18 +849,18 @@ export const getVerificationQueue = async (req, res) => {
                 LIMIT 1
             ) p ON true
             LEFT JOIN LATERAL (
-                SELECT id, action_type, detail, status, raised_at
-                FROM action_required
-                WHERE project_id = p.id
-                  AND status IN ('open', 'doc_uploaded', 'in_review')
+                SELECT arq.id, arq.action_type, arq.detail, arq.status, arq.raised_at
+                FROM action_required arq
+                WHERE arq.project_id = p.id
+                  AND arq.status IN ('open', 'doc_uploaded', 'in_review')
                 ORDER BY (
                     CASE 
-                        WHEN d.doc_type = 'electric_bill' AND action_type = 'electric_bill_name_correction' THEN 1
-                        WHEN d.doc_type = 'bank_passbook' AND action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
-                        WHEN d.doc_type IN ('land_ror', 'aadhaar_card') AND action_type = 'ownership_transfer' THEN 1
+                        WHEN d.doc_type = 'electric_bill' AND arq.action_type = 'electric_bill_name_correction' THEN 1
+                        WHEN d.doc_type = 'bank_passbook' AND arq.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
+                        WHEN d.doc_type IN ('land_ror', 'aadhaar_card') AND arq.action_type = 'ownership_transfer' THEN 1
                         ELSE 2
                     END
-                ), created_at DESC
+                ), arq.raised_at DESC
                 LIMIT 1
             ) ar ON true
             WHERE (d.status = 'uploaded' AND d.version > 1) OR (d.status = 'action_required')

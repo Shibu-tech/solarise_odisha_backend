@@ -87,7 +87,8 @@ app.use(errorHandler);
 
 pool.query("SELECT NOW()", (err, res) => {
     if (err) {
-        console.error(err);
+        console.error("Database connectivity check failed:", err);
+        return;
     }
     console.log(res.rows);
 });

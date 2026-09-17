@@ -1,17 +1,31 @@
 import pool from "./config/db.js";
 import { flagDocument, reuploadDocument, verifyDocument, getVerificationQueue } from "./controllers/documents.controller.js";
 
+if (process.env.ALLOW_WORKFLOW_DB_TEST !== "true") {
+    console.error("Refusing to run against a live database. Set ALLOW_WORKFLOW_DB_TEST=true to opt in.");
+    process.exit(1);
+}
+
 async function runTest() {
     console.log("--- STARTING DOCUMENT CORRECTION WORKFLOW TEST ---");
     let testDocId = null;
     let newDocId = null;
     let actionId = null;
     const consumerId = 1;
+    let originalProjectStatuses = [];
     const agentUserId = 4;
     const adminUserId = 1;
 
     try {
         // Step 0: Insert a mock document v1
+        // This diagnostic works against an existing consumer, so restore every
+        // affected project's original status during cleanup.
+        const projectStatuses = await pool.query(
+            "SELECT id, current_status FROM projects WHERE consumer_id = $1",
+            [consumerId]
+        );
+        originalProjectStatuses = projectStatuses.rows;
+
         console.log("1. Creating initial document v1 uploaded by Agent (ID: 4)...");
         const docInsert = await pool.query(`
             INSERT INTO documents (consumer_id, doc_type, file_url, file_name, status, version, uploaded_by)
@@ -41,7 +55,7 @@ async function runTest() {
         await flagDocument(flagReq, flagRes);
         console.log("Flag response status:", flagResData?.code);
         console.log("Flag message:", flagResData?.data?.message);
-        
+
         const flaggedDoc = await pool.query("SELECT status, reject_reason FROM documents WHERE id = $1", [testDocId]);
         console.log(`Document status: '${flaggedDoc.rows[0].status}', reason: '${flaggedDoc.rows[0].reject_reason}'`);
         if (flaggedDoc.rows[0].status !== 'action_required') throw new Error("Document status should be action_required");
@@ -146,12 +160,17 @@ async function runTest() {
         console.error("❌ Test failed:", err);
     } finally {
         console.log("\nCleaning up test artifacts from database...");
-        if (actionId) await pool.query("DELETE FROM action_required WHERE id = $1", [actionId]).catch(() => {});
-        if (testDocId) await pool.query("DELETE FROM documents WHERE id = $1", [testDocId]).catch(() => {});
-        if (newDocId) await pool.query("DELETE FROM documents WHERE id = $1", [newDocId]).catch(() => {});
+        if (actionId) await pool.query("DELETE FROM action_required WHERE id = $1", [actionId]).catch(() => { });
+        if (testDocId) await pool.query("DELETE FROM documents WHERE id = $1", [testDocId]).catch(() => { });
+        if (newDocId) await pool.query("DELETE FROM documents WHERE id = $1", [newDocId]).catch(() => { });
         // Reset project status
-        await pool.query("UPDATE projects SET current_status = 'materials_delivered' WHERE consumer_id = $1", [consumerId]).catch(() => {});
+        for (const project of originalProjectStatuses) {
+            await pool.query(
+                "UPDATE projects SET current_status = $1 WHERE id = $2",
+                [project.current_status, project.id]
+            ).catch(() => { });
         console.log("✓ Cleanup complete.");
+        }
         process.exit(0);
     }
 }
