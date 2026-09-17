@@ -28,7 +28,7 @@ export const VerificationQueuePanel = () => {
       setError(null);
 
       // Call optimized verification queue endpoint
-      const queueRes = await api.get('/api/documents/verification-queue');
+      const queueRes = await api.get('/documents/verification-queue');
       const docs = queueRes.data?.data || [];
       setDocuments(docs);
 
@@ -158,11 +158,10 @@ export const VerificationQueuePanel = () => {
               <button
                 key={doc.id}
                 onClick={() => setSelectedDocId(doc.id)}
-                className={`w-full text-left p-3 rounded-lg border-2 transition ${
-                  selectedDocId === doc.id
+                className={`w-full text-left p-3 rounded-lg border-2 transition ${selectedDocId === doc.id
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-blue-300'
-                }`}
+                  }`}
               >
                 <p className="font-semibold text-gray-900 text-sm">
                   {doc.doc_type?.replace(/_/g, ' ')}
@@ -171,8 +170,8 @@ export const VerificationQueuePanel = () => {
                   v{doc.version || 1} • {doc.consumer_name || 'Unknown Consumer'}
                 </p>
                 <p className="text-xs text-blue-600 font-semibold mt-2">
-                  {actions[doc.id]?.status === 'doc_uploaded' 
-                    ? '⏳ Awaiting Review' 
+                  {actions[doc.id]?.status === 'doc_uploaded'
+                    ? '⏳ Awaiting Review'
                     : '📤 Uploaded'}
                 </p>
               </button>
