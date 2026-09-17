@@ -34,7 +34,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
         const myActionsRes = await api.get('/actions/my-open-actions');
         actions = myActionsRes.data?.data || [];
       } catch {
-        const allRes = await api.get('/api/actions');
+        const allRes = await api.get('/actions');
         actions = allRes.data?.data || [];
       }
 
