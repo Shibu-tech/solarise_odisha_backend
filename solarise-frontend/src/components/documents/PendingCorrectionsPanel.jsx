@@ -34,7 +34,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
         const myActionsRes = await api.get('/actions/my-open-actions');
         actions = myActionsRes.data?.data || [];
       } catch {
-        const allRes = await api.get('/actions');
+        const allRes = await api.get('/api/actions');
         actions = allRes.data?.data || [];
       }
 
@@ -66,7 +66,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
           };
         } else if (action.consumer_id) {
           try {
-            const docsRes = await api.get(`/documents/consumer/${action.consumer_id}`);
+            const docsRes = await api.get(`/api/documents/consumer/${action.consumer_id}`);
             const docs = docsRes.data?.data || [];
             const relevantDoc = docs.find((d) => d.status === 'action_required' || d.status === 'uploaded');
             if (relevantDoc) {
@@ -138,7 +138,7 @@ export const PendingCorrectionsPanel = ({ userId }) => {
           <div>
             <h1 className="text-3xl font-bold">⚠️ Pending Corrections</h1>
             <p className="text-amber-100 mt-2">
-              You have {pendingActions.length} {pendingActions.length === 1 ? 'correction' : 'corrections'} assigned to you. 
+              You have {pendingActions.length} {pendingActions.length === 1 ? 'correction' : 'corrections'} assigned to you.
               Please review and correct the flagged documents.
             </p>
           </div>
