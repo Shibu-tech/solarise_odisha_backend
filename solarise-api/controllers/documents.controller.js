@@ -148,7 +148,7 @@ export const previewDocument = async (req, res) => {
 
         try {
             const { stream, contentType, contentLength } = await getFileStreamFromS3(doc.file_url);
-            
+
             res.setHeader("Content-Type", contentType || doc.mime_type || "application/octet-stream");
             if (contentLength) {
                 res.setHeader("Content-Length", contentLength);
@@ -157,7 +157,7 @@ export const previewDocument = async (req, res) => {
                 "Content-Disposition",
                 `inline; filename="${encodeURIComponent(doc.file_name || 'document')}"`
             );
-            
+
             stream.pipe(res);
         } catch (s3Err) {
             const presigned = await getPresignedDownloadUrl(doc.file_url, 3600);
@@ -290,13 +290,13 @@ export const verifyDocument = async (req, res) => {
                             WHEN $2 IN ('land_ror', 'aadhaar_card') AND ar.action_type = 'ownership_transfer' THEN 1
                             ELSE 2
                         END
-                    ), ar.created_at DESC
+                    ), ar.raised_at DESC
                     LIMIT 1
                 `, [projectId, doc_type]);
 
                 if (actionRes.rowCount > 0) {
                     const action = actionRes.rows[0];
-                    
+
                     // Resolve the action
                     const resolveRes = await client.query(`
                         UPDATE action_required
@@ -378,7 +378,7 @@ export const verifyDocument = async (req, res) => {
         } catch { /* ignore notification errors */ }
 
         // Return response with action status
-        res.status(200).json({ 
+        res.status(200).json({
             message: "Document verified and action resolved",
             data: verifiedDoc,
             action_resolved: resolvedAction ? {
@@ -500,7 +500,7 @@ export const reuploadDocument = async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'uploaded')
             RETURNING *
         `, [consumer_id, doc_type, file_url, file_name || null, mime_type || null, geo_lat || null, geo_lng || null, uploaded_by, newVersion]);
-        
+
         // Step 4: Update the associated action_required if it exists
         if (projectId) {
             const actionIdParam = req.body.action_id;
@@ -527,7 +527,7 @@ export const reuploadDocument = async (req, res) => {
                             WHEN $2 IN ('land_ror', 'aadhaar_card') AND ar.action_type = 'ownership_transfer' THEN 1
                             ELSE 2
                         END
-                    ), ar.created_at DESC
+                    ), ar.raised_at DESC
                     LIMIT 1
                 `;
                 actionParams = [projectId, doc_type];
@@ -557,7 +557,7 @@ export const reuploadDocument = async (req, res) => {
                 }
             }
         }
-        
+
         await client.query("COMMIT");
 
         try {
@@ -578,7 +578,7 @@ export const reuploadDocument = async (req, res) => {
     } catch (err) {
         await client.query("ROLLBACK");
         if (uploadedObject?.key) {
-            await deleteFileFromS3(uploadedObject.key).catch(() => {});
+            await deleteFileFromS3(uploadedObject.key).catch(() => { });
         }
         res.status(500).json({ error: err.message });
     } finally {
@@ -642,8 +642,8 @@ export const flagDocument = async (req, res) => {
 
         const doc = docRes.rows[0];
         const uploadedByUserId = doc.uploaded_by;
-        const uploaderName = doc.first_name && doc.last_name 
-            ? `${doc.first_name} ${doc.last_name}` 
+        const uploaderName = doc.first_name && doc.last_name
+            ? `${doc.first_name} ${doc.last_name}`
             : 'Agent';
 
         // Ensure valid user ID for FK constraint (who is flagging the document)
@@ -776,7 +776,7 @@ export const uploadDocument = async (req, res) => {
         const enrichedDoc = await attachPresignedUrls(docRow);
         res.status(201).json({ data: enrichedDoc });
     } catch (err) {
-        if (uploadedObject?.key) await deleteFileFromS3(uploadedObject.key).catch(() => {});
+        if (uploadedObject?.key) await deleteFileFromS3(uploadedObject.key).catch(() => { });
         if (err.code === "23503") return res.status(400).json({ error: "Referenced consumer or authenticated user does not exist" });
         res.status(400).json({ error: err.message || "File upload failed" });
     }
@@ -868,7 +868,7 @@ export const getVerificationQueue = async (req, res) => {
         `;
         const result = await pool.query(query);
         const enrichedRows = await attachPresignedUrls(result.rows);
-        
+
         // Also attach presigned url for prev_file_url if it exists
         for (const row of enrichedRows) {
             if (row.prev_file_url && row.prev_file_url.startsWith('s3://')) {
