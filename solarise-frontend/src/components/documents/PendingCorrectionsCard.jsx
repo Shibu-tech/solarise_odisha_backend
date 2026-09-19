@@ -28,7 +28,7 @@ export const PendingCorrectionsCard = ({ action, document, onReupload, onViewDet
     'in_review': 'bg-purple-50 border-purple-200'
   };
 
-  const previewUrl = document.presigned_url || document.file_url;
+  const previewUrl = document.presigned_url;
 
   return (
     <div className={`border-l-4 border-amber-400 rounded-2xl p-5 shadow-2xs border border-slate-200/80 ${statusColors[action.status] || 'bg-white'}`}>
@@ -83,7 +83,7 @@ export const PendingCorrectionsCard = ({ action, document, onReupload, onViewDet
         </div>
 
         <div className="flex sm:flex-col gap-2 shrink-0">
-          {previewUrl && (
+          {((previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('http')) ? (
             <a
               href={previewUrl}
               target="_blank"
@@ -92,7 +92,7 @@ export const PendingCorrectionsCard = ({ action, document, onReupload, onViewDet
             >
               👁️ View Flagged File
             </a>
-          )}
+          ) : null)}
 
           {action.status === 'open' && (
             <Button
