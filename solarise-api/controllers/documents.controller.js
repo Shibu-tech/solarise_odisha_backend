@@ -56,7 +56,7 @@ export const getDocumentById = async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(`
-            SELECT 
+            SELECT
                 d.id,
                 d.consumer_id,
                 COALESCE(c.first_name, '') || ' ' || COALESCE(c.last_name, '') AS consumer_name,
