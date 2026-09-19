@@ -114,8 +114,6 @@ export const DocumentVerificationPanel = ({
 
       {/* Document Preview */}
       <div className="grid md:grid-cols-2 gap-4">
-
-        {/* Previous Version */}
         {previousVersion && (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
@@ -125,9 +123,7 @@ export const DocumentVerificationPanel = ({
             </div>
 
             <div className="p-4">
-              {previousVersion.download_url &&
-              typeof previousVersion.download_url === "string" &&
-              previousVersion.download_url.startsWith("http") ? (
+              {previousVersion.download_url ? (
                 <a
                   href={previousVersion.download_url}
                   target="_blank"
@@ -155,7 +151,6 @@ export const DocumentVerificationPanel = ({
             </div>
           </div>
         )}
-
       </div>
 
       {/* Action Buttons */}
