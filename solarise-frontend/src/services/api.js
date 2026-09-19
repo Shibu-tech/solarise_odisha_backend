@@ -139,9 +139,19 @@
     completeItem: (id, data) => api.patch(`/installation/${id}/complete`, data),
     saveBatch: (projectId, data) => api.post(`/installation/project:${projectId}/batch`, data),
     getProgress: (projectId) => api.get(`/installation/project/${projectId}/progress`),
-  };
+};
 
-  // Payments Service
+// Actions Service
+export const actionService = {
+  getAll: () => api.get('/actions'),
+  getMyOpenActions: () => api.get('/actions/my-open-actions'),
+  getByProject: (projectId) => api.get(`/actions/project/${projectId}`),
+  create: (data) => api.post('/actions', data),
+  updateStatus: (id, data) => api.patch(`/actions/${id}/status`, data),
+  getOverdue: () => api.get('/actions/overdue'),
+};
+
+// Payments Service
   export const paymentService = {
     getAll: () => api.get('/payments'),
     getById: (id) => api.get(`/payments/${id}`),
