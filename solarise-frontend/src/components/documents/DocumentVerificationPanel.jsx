@@ -123,9 +123,9 @@ export const DocumentVerificationPanel = ({
               </p>
             </div>
             <div className="p-4">
-              {(previousVersion.prev_presigned_url || previousVersion.presigned_url || previousVersion.file_url) ? (
+              {((previousVersion.prev_presigned_url || previousVersion.presigned_url) && typeof (previousVersion.prev_presigned_url || previousVersion.presigned_url) === 'string' && (previousVersion.prev_presigned_url || previousVersion.presigned_url).startsWith('http')) ? (
                 <a
-                  href={previousVersion.prev_presigned_url || previousVersion.presigned_url || previousVersion.file_url}
+                  href={previousVersion.prev_presigned_url || previousVersion.presigned_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold text-gray-700 transition"
@@ -153,7 +153,7 @@ export const DocumentVerificationPanel = ({
             </p>
           </div>
           <div className="p-4">
-            {(document.presigned_url || document.file_url) ? (
+            {((document.presigned_url || document.file_url) && typeof (document.presigned_url || document.file_url) === 'string' && (document.presigned_url || document.file_url).startsWith('http')) ? (
               <a
                 href={document.presigned_url || document.file_url}
                 target="_blank"

@@ -151,13 +151,14 @@ export const attachPresignedUrls = async (docs, expiresInSeconds = 3600) => {
     const enriched = await Promise.all(
         list.map(async (doc) => {
             if (!doc) return doc;
-            let download_url = doc.file_url;
+            let download_url = null;
             if (doc.file_url) {
                 try {
                     const signed = await getPresignedDownloadUrl(doc.file_url, expiresInSeconds);
                     if (signed) download_url = signed;
                 } catch {
-                    // Keep original file_url if presigning is unavailable
+                    // If presigning fails, don't fallback to raw S3 URL
+                    download_url = null;
                 }
             }
             return {

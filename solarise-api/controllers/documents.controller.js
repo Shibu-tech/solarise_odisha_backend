@@ -915,9 +915,11 @@ export const getVerificationQueue = async (req, res) => {
                 try {
                     row.prev_presigned_url = await getPresignedDownloadUrl(row.prev_file_url);
                 } catch {
-                    row.prev_presigned_url = row.prev_file_url;
+                    // If presigning fails, don't fallback to raw S3 URL
+                    row.prev_presigned_url = null;
                 }
             } else {
+                // For non-S3 URLs, keep as-is (should be rare)
                 row.prev_presigned_url = row.prev_file_url;
             }
         }
