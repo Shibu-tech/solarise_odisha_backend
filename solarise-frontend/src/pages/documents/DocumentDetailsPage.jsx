@@ -166,8 +166,8 @@ const DocumentDetailsPage = () => {
   }
 
   const fileUrl = document.download_url || (document.id ? `http://localhost:5000/api/documents/${document.id}/preview` : '');
-  const isImage = (document.mime_type?.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(document.file_url || ''));
-  const isPdf = (document.mime_type === 'application/pdf' || /\.pdf$/i.test(document.file_url || ''));
+  const isImage = (document.mime_type?.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(document.download_url || ''));
+  const isPdf = (document.mime_type === 'application/pdf' || /\.pdf$/i.test(document.download_url || ''));
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">

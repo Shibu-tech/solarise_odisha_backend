@@ -264,7 +264,7 @@ const DocumentResolvePage = () => {
                 <div><span className="text-gray-400 font-semibold block">Uploaded At</span><span className="text-gray-900 font-mono">{doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString() : 'N/A'}</span></div>
               </div>
               <div className="space-y-3">
-                <div><span className="text-gray-400 font-semibold block">File URL</span><a href={doc.download_url || doc.file_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono break-all">{doc.file_url}</a></div>
+                <div><span className="text-gray-400 font-semibold block">File URL</span><a href={doc.download_url || doc.file_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono break-all">{doc.download_url || doc.file_url}</a></div>
                 {doc.geo_lat && doc.geo_lng && (
                   <div><span className="text-gray-400 font-semibold block">GPS Coordinates</span><span className="font-mono text-amber-700 font-bold">{doc.geo_lat}, {doc.geo_lng}</span></div>
                 )}

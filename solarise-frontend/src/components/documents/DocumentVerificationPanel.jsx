@@ -153,9 +153,9 @@ export const DocumentVerificationPanel = ({
             </p>
           </div>
           <div className="p-4">
-            {((document.presigned_url || document.file_url) && typeof (document.presigned_url || document.file_url) === 'string' && (document.presigned_url || document.file_url).startsWith('http')) ? (
+            {((document.presigned_url || document.download_url) && typeof (document.presigned_url || document.download_url) === 'string' && (document.presigned_url || document.download_url).startsWith('http')) ? (
               <a
-                href={document.presigned_url || document.file_url}
+                href={document.presigned_url || document.download_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 rounded-lg text-sm font-semibold text-emerald-700 transition"
