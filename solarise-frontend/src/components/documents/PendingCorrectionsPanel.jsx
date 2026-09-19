@@ -6,7 +6,7 @@ import api from '../../services/api';
 
 /**
  * PendingCorrectionsPanel
- * 
+ *
  * Main component for agents to view and manage their pending document corrections.
  * Shows all open corrections assigned to the current agent.
  */
@@ -33,7 +33,8 @@ export const PendingCorrectionsPanel = ({ userId }) => {
       try {
         const myActionsRes = await api.get('/actions/my-open-actions');
         actions = myActionsRes.data?.data || [];
-      } catch {
+      } catch (myErr) {
+        // Silently fallback - we'll handle errors in the outer catch
         const allRes = await api.get('/actions');
         actions = allRes.data?.data || [];
       }
