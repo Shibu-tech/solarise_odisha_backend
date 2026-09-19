@@ -92,6 +92,7 @@ export const getMyOpenActions = async (req, res) => {
                 d.doc_type,
                 d.file_url,
                 d.file_name,
+                d.uploaded_by AS document_uploaded_by,
                 d.status AS document_status,
                 d.version AS document_version
             FROM action_required ar
@@ -101,7 +102,7 @@ export const getMyOpenActions = async (req, res) => {
             LEFT JOIN users u2 ON ar.assigned_to = u2.id
             LEFT JOIN users u3 ON ar.resolved_by = u3.id
             LEFT JOIN LATERAL (
-                SELECT id, doc_type, file_url, file_name, status, version
+                SELECT id, doc_type, file_url, file_name, status, version, uploaded_by
                 FROM documents
                 WHERE consumer_id = p.consumer_id
                 ORDER BY (
@@ -114,7 +115,8 @@ export const getMyOpenActions = async (req, res) => {
                 ), version DESC
                 LIMIT 1
             ) d ON true
-            WHERE ar.assigned_to = $1 AND ar.status NOT IN ('resolved', 'cancelled')
+            WHERE (ar.assigned_to = $1 OR (ar.assigned_to IS NULL AND d.uploaded_by = $1))
+              AND ar.status NOT IN ('resolved', 'cancelled')
             ORDER BY ar.raised_at DESC
         `, [userId]);
         const enrichedRows = await attachPresignedUrls(result.rows);

@@ -39,13 +39,19 @@ export const PendingCorrectionsPanel = ({ userId }) => {
       }
 
       // Filter for correction actions
-      const correctionActions = actions.filter(
-        (action) =>
-          action.status !== 'resolved' &&
-          action.status !== 'cancelled' &&
-          ['electric_bill_name_correction', 'bank_passbook_name_correction', 'bank_passbook_update', 'ownership_transfer', 'commercial_to_domestic', 'other'].includes(action.action_type) &&
-          (!userId || !action.assigned_to || Number(action.assigned_to) === Number(userId))
-      );
+      const correctionActions = actions.filter((action) => {
+        if (action.status === 'resolved' || action.status === 'cancelled') return false;
+        if (!['electric_bill_name_correction', 'bank_passbook_name_correction', 'bank_passbook_update', 'ownership_transfer', 'commercial_to_domestic', 'other'].includes(action.action_type)) {
+          return false;
+        }
+
+        if (!userId) return true;
+
+        const assignedTo = action.assigned_to != null ? Number(action.assigned_to) : null;
+        const uploadedBy = action.document_uploaded_by != null ? Number(action.document_uploaded_by) : null;
+
+        return assignedTo === Number(userId) || uploadedBy === Number(userId) || (assignedTo === null && uploadedBy === null);
+      });
 
       setPendingActions(correctionActions);
 

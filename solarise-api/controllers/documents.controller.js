@@ -659,6 +659,21 @@ export const flagDocument = async (req, res) => {
             validUserBy = fallbackUser.rows[0]?.id || 1;
         }
 
+        // Prefer the agent who uploaded the document, but fall back to the consumer owner
+        // so the correction action still reaches the correct agent for older/legacy records.
+        const consumerOwnerRes = await client.query(
+            "SELECT created_by FROM consumers WHERE id = $1",
+            [doc.consumer_id]
+        );
+        const consumerCreatedBy = consumerOwnerRes.rows[0]?.created_by;
+        let effectiveAssignedTo = uploadedByUserId || consumerCreatedBy || validUserBy;
+        if (effectiveAssignedTo) {
+            const assignedUserCheck = await client.query("SELECT id FROM users WHERE id = $1", [effectiveAssignedTo]);
+            if (assignedUserCheck.rowCount === 0) {
+                effectiveAssignedTo = validUserBy;
+            }
+        }
+
         const VALID_ACTION_TYPES = [
             'electric_bill_name_correction',
             'ownership_transfer',
@@ -678,16 +693,41 @@ export const flagDocument = async (req, res) => {
             RETURNING *
         `, [detail, id]);
 
-        // 3. Create entry in action_required if project exists
+        // 3. Create or refresh the correction action so agents always see the pending item.
         let actionItem = null;
         if (doc.project_id) {
-            // Assign action to the agent who uploaded the document
-            const actionRes = await client.query(`
-                INSERT INTO action_required (project_id, action_type, detail, raised_by, assigned_to, status)
-                VALUES ($1, $2, $3, $4, $5, 'open')
-                RETURNING *
-            `, [doc.project_id, finalActionType, detail, validUserBy, uploadedByUserId]);
-            actionItem = actionRes.rows[0];
+            const existingActionRes = await client.query(`
+                SELECT id
+                FROM action_required
+                WHERE project_id = $1
+                  AND action_type = $2
+                  AND status IN ('open', 'doc_uploaded', 'in_review')
+                ORDER BY raised_at DESC
+                LIMIT 1
+            `, [doc.project_id, finalActionType]);
+
+            if (existingActionRes.rowCount > 0) {
+                const existingAction = existingActionRes.rows[0];
+                const refreshedAction = await client.query(`
+                    UPDATE action_required
+                    SET detail = $2,
+                        raised_by = $3,
+                        assigned_to = $4,
+                        status = 'open',
+                        resolved_by = NULL,
+                        resolved_at = NULL
+                    WHERE id = $1
+                    RETURNING *
+                `, [existingAction.id, detail, validUserBy, effectiveAssignedTo]);
+                actionItem = refreshedAction.rows[0];
+            } else {
+                const actionRes = await client.query(`
+                    INSERT INTO action_required (project_id, action_type, detail, raised_by, assigned_to, status)
+                    VALUES ($1, $2, $3, $4, $5, 'open')
+                    RETURNING *
+                `, [doc.project_id, finalActionType, detail, validUserBy, effectiveAssignedTo]);
+                actionItem = actionRes.rows[0];
+            }
 
             // 4. Update project current_status to 'action_required'
             await client.query(`
