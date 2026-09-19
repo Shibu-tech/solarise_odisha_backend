@@ -839,7 +839,7 @@ export const getS3Health = async (req, res) => {
 export const getVerificationQueue = async (req, res) => {
     try {
         const query = `
-            SELECT 
+            SELECT
                 d.id,
                 d.consumer_id,
                 TRIM(CONCAT(c.first_name, ' ', COALESCE(c.last_name, ''))) AS consumer_name,
@@ -875,17 +875,17 @@ export const getVerificationQueue = async (req, res) => {
             LEFT JOIN LATERAL (
                 SELECT id, file_url, file_name, version, uploaded_at, reject_reason
                 FROM documents pd
-                WHERE pd.consumer_id = d.consumer_id 
-                  AND pd.doc_type = d.doc_type 
+                WHERE pd.consumer_id = d.consumer_id
+                  AND pd.doc_type = d.doc_type
                   AND pd.version < d.version
                 ORDER BY pd.version DESC
                 LIMIT 1
             ) prev ON true
             LEFT JOIN LATERAL (
-                SELECT id 
-                FROM projects 
-                WHERE consumer_id = d.consumer_id 
-                ORDER BY id DESC 
+                SELECT id
+                FROM projects
+                WHERE consumer_id = d.consumer_id
+                ORDER BY id DESC
                 LIMIT 1
             ) p ON true
             LEFT JOIN LATERAL (
@@ -894,7 +894,7 @@ export const getVerificationQueue = async (req, res) => {
                 WHERE arq.project_id = p.id
                   AND arq.status IN ('open', 'doc_uploaded', 'in_review')
                 ORDER BY (
-                    CASE 
+                    CASE
                         WHEN d.doc_type = 'electric_bill' AND arq.action_type = 'electric_bill_name_correction' THEN 1
                         WHEN d.doc_type = 'bank_passbook' AND arq.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
                         WHEN d.doc_type IN ('land_ror', 'aadhaar_card') AND arq.action_type = 'ownership_transfer' THEN 1
@@ -903,7 +903,7 @@ export const getVerificationQueue = async (req, res) => {
                 ), arq.raised_at DESC
                 LIMIT 1
             ) ar ON true
-            WHERE (d.status = 'uploaded' AND d.version > 1) OR (d.status = 'action_required')
+            WHERE d.status = 'uploaded' AND d.version > 1
             ORDER BY d.uploaded_at DESC
         `;
         const result = await pool.query(query);
