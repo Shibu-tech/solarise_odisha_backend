@@ -114,7 +114,8 @@ export const DocumentVerificationPanel = ({
 
       {/* Document Preview */}
       <div className="grid md:grid-cols-2 gap-4">
-        {/* Previous Version (if available) */}
+
+        {/* Previous Version */}
         {previousVersion && (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
@@ -122,10 +123,13 @@ export const DocumentVerificationPanel = ({
                 Previous Version (v{previousVersion.version || 1})
               </p>
             </div>
+
             <div className="p-4">
-              {((previousVersion.prev_presigned_url || previousVersion.presigned_url) && typeof (previousVersion.prev_presigned_url || previousVersion.presigned_url) === 'string' && (previousVersion.prev_presigned_url || previousVersion.presigned_url).startsWith('http')) ? (
+              {previousVersion.download_url &&
+              typeof previousVersion.download_url === "string" &&
+              previousVersion.download_url.startsWith("http") ? (
                 <a
-                  href={previousVersion.prev_presigned_url || previousVersion.presigned_url}
+                  href={previousVersion.download_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold text-gray-700 transition"
@@ -133,48 +137,25 @@ export const DocumentVerificationPanel = ({
                   📥 View Previous Document
                 </a>
               ) : (
-                <p className="text-sm text-gray-600">No previous version available</p>
+                <p className="text-sm text-gray-600">
+                  No previous document URL available
+                </p>
               )}
+
               {previousVersion.reject_reason && (
                 <div className="mt-3 p-3 bg-red-50 rounded border border-red-200">
-                  <p className="text-xs font-semibold text-red-800 mb-1">Flag/Rejection Reason:</p>
-                  <p className="text-sm text-red-700">{previousVersion.reject_reason}</p>
+                  <p className="text-xs font-semibold text-red-800 mb-1">
+                    Flag/Rejection Reason:
+                  </p>
+                  <p className="text-sm text-red-700">
+                    {previousVersion.reject_reason}
+                  </p>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Current Version (Corrected) */}
-        <div className="bg-white rounded-lg border border-emerald-200 overflow-hidden">
-          <div className="bg-emerald-100 px-4 py-3 border-b border-emerald-200">
-            <p className="text-sm font-semibold text-emerald-900">
-              ✓ Corrected Version (v{document.version || 1})
-            </p>
-          </div>
-          <div className="p-4">
-            {((document.presigned_url || document.download_url) && typeof (document.presigned_url || document.download_url) === 'string' && (document.presigned_url || document.download_url).startsWith('http')) ? (
-              <a
-                href={document.presigned_url || document.download_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 rounded-lg text-sm font-semibold text-emerald-700 transition"
-              >
-                📥 View Corrected Document
-              </a>
-            ) : (
-              <p className="text-sm text-gray-600">No document available</p>
-            )}
-            {document.geo_lat && document.geo_lng && (
-              <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
-                <p className="text-xs font-semibold text-blue-800 mb-1">📍 Location Metadata:</p>
-                <p className="text-sm text-blue-700">
-                  {Number(document.geo_lat).toFixed(6)}, {Number(document.geo_lng).toFixed(6)}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Action Buttons */}
