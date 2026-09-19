@@ -50,7 +50,8 @@ export const PendingCorrectionsPanel = ({ userId }) => {
         const assignedTo = action.assigned_to != null ? Number(action.assigned_to) : null;
         const uploadedBy = action.document_uploaded_by != null ? Number(action.document_uploaded_by) : null;
 
-        return assignedTo === Number(userId) || uploadedBy === Number(userId) || (assignedTo === null && uploadedBy === null);
+        // Show actions assigned to the current user, or unassigned actions where the user uploaded the document
+        return assignedTo === Number(userId) || (assignedTo === null && uploadedBy === Number(userId));
       });
 
       setPendingActions(correctionActions);
