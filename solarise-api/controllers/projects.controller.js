@@ -218,7 +218,7 @@ export const createProject = async (req, res) => {
 
         const result = await pool.query(`
             INSERT INTO projects (consumer_id, registration_no, capacity_kw, assigned_site_manager, current_status)
-            VALUES ($1, $2, $3, $4, COALESCE($5, 'new_registration'::project_status))
+            VALUES ($1, $2, $3, $4, COALESCE($5, 'new_registration'::public.project_status))
             RETURNING *
         `, [
             consumer_id,
