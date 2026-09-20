@@ -24,7 +24,7 @@ export const DocumentVerificationPanel = ({
   const currentFileUrl = document.presigned_url || document.download_url;
   const hasCurrentFile = currentFileUrl && typeof currentFileUrl === 'string' && currentFileUrl.startsWith('http');
 
-  const prevFileUrl = previousVersion?.file_url || previousVersion?.prev_presigned_url;
+  const prevFileUrl = previousVersion?.prev_presigned_url || previousVersion?.file_url;
   const hasPrevFile = prevFileUrl && typeof prevFileUrl === 'string' && prevFileUrl.startsWith('http');
 
   const handleVerify = () => {
