@@ -74,7 +74,7 @@ export const initChecklist = async (req, res) => {
         // Insert all 10 items in a single batch
         const values = INSTALLATION_ITEMS.map((item, i) => {
             const offset = i * 3;
-            return `($${offset + 1}, $${offset + 2}::installation_item, $${offset + 3})`;
+            return `($${offset + 1}, $${offset + 2}::public.installation_item, $${offset + 3})`;
         }).join(", ");
 
         const params = INSTALLATION_ITEMS.flatMap(item => [
@@ -207,7 +207,7 @@ export const saveChecklistBatch = async (req, res) => {
         if (countCheck.rows[0].count === 0) {
             const values = INSTALLATION_ITEMS.map((item, i) => {
                 const offset = i * 3;
-                return `($${offset + 1}, $${offset + 2}::installation_item, $${offset + 3})`;
+                return `($${offset + 1}, $${offset + 2}::public.installation_item, $${offset + 3})`;
             }).join(", ");
             const params = INSTALLATION_ITEMS.flatMap(item => [
                 projectId, item.item, item.weight_pct
@@ -227,7 +227,7 @@ export const saveChecklistBatch = async (req, res) => {
                 SET is_done = $1,
                     done_by = CASE WHEN $1 = TRUE THEN $2::INTEGER ELSE NULL END,
                     done_at = CASE WHEN $1 = TRUE THEN now() ELSE NULL END
-                WHERE project_id = $3 AND item = $4::installation_item
+                WHERE project_id = $3 AND item = $4::public.installation_item
             `, [isDone, userId, projectId, it.item]);
         }
 
