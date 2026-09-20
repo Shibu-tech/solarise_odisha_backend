@@ -124,9 +124,12 @@ export const DocumentVerificationPanel = ({
             </div>
 
             <div className="p-4">
-              {previousVersion.download_url ? (
+              {/* Check for file_url or prev_presigned_url and validate */}
+              const prevFileUrl = previousVersion.file_url || previousVersion.prev_presigned_url;
+              const hasPrevFile = prevFileUrl && typeof prevFileUrl === 'string' && prevFileUrl.startsWith('http');
+              {hasPrevFile ? (
                 <a
-                  href={previousVersion.download_url}
+                  href={prevFileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold text-gray-700 transition"
