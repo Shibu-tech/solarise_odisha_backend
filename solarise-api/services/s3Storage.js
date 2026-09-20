@@ -17,7 +17,7 @@ const cleanEnv = (val) => {
     return String(val).trim().replace(/^["']|["']$/g, "").trim();
 };
 
-export const getConfig = () => {
+const getConfig = () => {
     const region = cleanEnv(process.env.AWS_REGION) || "ap-south-2";
     const bucket = cleanEnv(process.env.AWS_S3_BUCKET) || cleanEnv(process.env.AWS_BUCKET_NAME) || "solarise-odisha-storage";
 
@@ -127,87 +127,32 @@ export const deleteFileFromS3 = async (keyOrUrl) => {
     }));
 };
 
-// export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
-//     try {
-//         const key = extractS3Key(keyOrUrl);
-//     if (!key) {
-//               console.error('Failed to extract S3 key from:', keyOrUrl);
-//               return null;
-//     }
+export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 600) => {
+    const key = extractS3Key(keyOrUrl);
+    if (!key) return null;
 
-//     const { bucket, region } = getConfig();
-//     const client = getS3Client({region});
+    const { bucket, region } = getConfig();
+    const client = getS3Client();
 
-//     const command = new GetObjectCommand({
-//         Bucket: bucket,
-//         Key: key,
-//         ResponseContentDisposition: "inline",
-//         ResponseContentType: 'application/pdf'
-//     });
-//     const url = await getSignedUrl(client, command, { expiresIn:expiresInSeconds });
-//     return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+    const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        ResponseContentDisposition: "inline",
+        ResponseContentType: getContentType(key),
+    });
 
-//      console.log(`Generated presigned URL for ${key}:`,
-//      url.substring(0, 100) + '...');
-//     } catch (error) {
-//         console.error('Error generating presigned URL:', error);
-//         return null;
-//     }
-    
-// };
+    return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+};
 
-// export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
-//       const key = extractS3Key(keyOrUrl);
-//       if (!key) return null;
+const getContentType = (key) => {
+    if (key.endsWith('.pdf')) return 'application/pdf';
+    if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
+    if (key.endsWith('.png')) return 'image/png';
+    if (key.endsWith('.txt')) return 'text/plain';
+    // Add more types as needed for your file types
+    return 'application/octet-stream'; // Safe fallback
+};
 
-//       // 🔑 CHANGED: Extract both bucket AND region from config
-//       const { bucket, region } = getConfig();
-
-//       // 🔑 CHANGED: Pass region to S3 client
-//       const client = getS3Client({ region });
-
-//       const command = new GetObjectCommand({
-//           Bucket: bucket,
-//           Key: key,
-//           ResponseContentDisposition: "inline",
-//           // 💡 RECOMMENDED: Add Content-Type for better browser handling
-//           ResponseContentType: 'application/octet-stream', // Adjust per file type (pdf, image, etc.)
-//       });
-
-//       return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
-//   };
-
- export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds =
-  300) => {
-      const key = extractS3Key(keyOrUrl);
-      if (!key) return null;
-
-      // 🔑 FIXED: Extract both bucket AND region (you were only getting
-      const { bucket, region } = getConfig();  // ← CHANGED: added region
-
-      // 🔑 Your getS3Client is already correct - it uses region internally
-      const client = getS3Client();  // ✅ This is already correct as-is
-
-      const command = new GetObjectCommand({
-          Bucket: bucket,
-          Key: key,
-          ResponseContentDisposition: "inline",
-          // 💡 ADDED: Content-Type for better browser preview
-          ResponseContentType: getContentType(key),
-      });
-
-      return await getSignedUrl(client, command, { expiresIn:
-  expiresInSeconds });
-  };
-
-  const getContentType = (key) => {
-      if (key.endsWith('.pdf')) return 'application/pdf';
-      if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
-      if (key.endsWith('.png')) return 'image/png';
-      if (key.endsWith('.txt')) return 'text/plain';
-      // Add more types as needed for your file types
-      return 'application/octet-stream'; // Safe fallback
-  };
 export const attachPresignedUrls = async (docs, expiresInSeconds = 3600) => {
     if (!docs) return docs;
     const isArray = Array.isArray(docs);
@@ -263,4 +208,3 @@ export const checkS3Health = async () => {
     await client.send(new HeadBucketCommand({ Bucket: bucket }));
     return { status: "connected", bucket, region };
 };
-
