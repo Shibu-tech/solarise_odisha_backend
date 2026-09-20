@@ -807,6 +807,11 @@ export const flagDocument = async (req, res) => {
 export const uploadDocument = async (req, res) => {
     let uploadedObject;
     try {
+        console.log("=== DOCUMENT UPLOAD DEBUG ===");
+        console.log("Content-Type:", req.headers["content-type"]);
+        console.log("BODY:", req.body);
+        console.log("FILE:", req.file);
+        console.log("USER:", req.user);
         // Handle case where req.body might be undefined due to multipart/form-data parsing issues
         const body = req.body || {};
         const { consumer_id, doc_type, file_name, geo_lat, geo_lng } = body;
