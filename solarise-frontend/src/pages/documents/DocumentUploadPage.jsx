@@ -125,7 +125,7 @@ const DocumentUploadPage = () => {
       }
 
       const payload = new FormData();
-      payload.append('file', selectedFile);
+      payload.append('file', form.selectedFile);
       payload.append('consumer_id', form.consumer_id);
       payload.append('doc_type', form.doc_type);
       payload.append('file_name', form.file_name || selectedFile.name);
