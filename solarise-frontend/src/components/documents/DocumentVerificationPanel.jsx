@@ -3,22 +3,29 @@ import { Button } from '../ui/Button';
 
 /**
  * DocumentVerificationPanel
- * 
+ *
  * Component for Document Team to review and verify re-uploaded documents.
  * Displays document details, versions, and verification controls.
  */
-export const DocumentVerificationPanel = ({ 
-  document, 
+export const DocumentVerificationPanel = ({
+  document,
   previousVersion,
   action,
   onVerify,
   onReject,
-  isLoading 
+  isLoading
 }) => {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
 
   if (!document) return null;
+
+  // Compute file URLs and validity for current and previous versions
+  const currentFileUrl = document.presigned_url || document.download_url;
+  const hasCurrentFile = currentFileUrl && typeof currentFileUrl === 'string' && currentFileUrl.startsWith('http');
+
+  const prevFileUrl = previousVersion?.file_url || previousVersion?.prev_presigned_url;
+  const hasPrevFile = prevFileUrl && typeof prevFileUrl === 'string' && prevFileUrl.startsWith('http');
 
   const handleVerify = () => {
     if (onVerify) {
@@ -124,9 +131,6 @@ export const DocumentVerificationPanel = ({
             </div>
 
             <div className="p-4">
-              {/* Check for file_url or prev_presigned_url and validate */}
-              const prevFileUrl = previousVersion.file_url || previousVersion.prev_presigned_url;
-              const hasPrevFile = prevFileUrl && typeof prevFileUrl === 'string' && prevFileUrl.startsWith('http');
               {hasPrevFile ? (
                 <a
                   href={prevFileUrl}
@@ -164,9 +168,9 @@ export const DocumentVerificationPanel = ({
             </p>
           </div>
           <div className="p-4">
-            {((document.presigned_url || document.download_url) && typeof (document.presigned_url || document.download_url) === 'string' && (document.presigned_url || document.download_url).startsWith('http')) ? (
+            {hasCurrentFile ? (
               <a
-                href={document.presigned_url || document.download_url}
+                href={currentFileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 rounded-lg text-sm font-semibold text-emerald-700 transition"
@@ -200,8 +204,8 @@ export const DocumentVerificationPanel = ({
               disabled={isLoading || document.status === 'verified'}
               className="flex-1"
             >
-              {document.status === 'verified' 
-                ? '✓ Already Verified' 
+              {document.status === 'verified'
+                ? '✓ Already Verified'
                 : isLoading ? '⏳ Processing...' : '✓ Verify & Accept'}
             </Button>
             <Button
@@ -257,5 +261,3 @@ export const DocumentVerificationPanel = ({
     </div>
   );
 };
-
-export default DocumentVerificationPanel;
