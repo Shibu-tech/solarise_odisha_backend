@@ -138,7 +138,7 @@
     getByProject: (projectId) => api.get(`/installation/project/${projectId}`),
     initChecklist: (projectId) => api.post(`/installation/project/${projectId}/init`),
     completeItem: (id, data) => api.patch(`/installation/${id}/complete`, data),
-    saveBatch: (projectId, data) => api.post(`/installation/project:${projectId}/batch`, data),
+    saveBatch: (projectId, data) => api.post(`/installation/project/${projectId}/batch`, data),
     getProgress: (projectId) => api.get(`/installation/project/${projectId}/progress`),
 };
 
