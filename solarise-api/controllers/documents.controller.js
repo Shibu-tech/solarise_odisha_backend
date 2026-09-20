@@ -439,12 +439,14 @@ export const reuploadDocument = async (req, res) => {
     let uploadedObject = null;
     try {
         const { id } = req.params;
-        const uploaded_by = req.user?.userId || req.user?.id || req.body.uploaded_by;
-        let file_url = req.body.file_url;
-        let file_name = req.body.file_name;
-        let mime_type = req.body.mime_type;
-        const geo_lat = req.body.geo_lat;
-        const geo_lng = req.body.geo_lng;
+        // Handle case where req.body might be undefined due to multipart/form-data parsing issues
+        const body = req.body || {};
+        const uploaded_by = req.user?.userId || req.user?.id || body.uploaded_by;
+        let file_url = body.file_url;
+        let file_name = body.file_name;
+        let mime_type = body.mime_type;
+        const geo_lat = body.geo_lat;
+        const geo_lng = body.geo_lng;
 
         if (!uploaded_by) {
             return res.status(400).json({ error: "Authenticated uploader or uploaded_by is required" });
@@ -799,8 +801,10 @@ export const flagDocument = async (req, res) => {
 export const uploadDocument = async (req, res) => {
     let uploadedObject;
     try {
-        const { consumer_id, doc_type, file_name, geo_lat, geo_lng } = req.body;
-        const uploaded_by = req.user?.userId || req.user?.id || req.body.uploaded_by;
+        // Handle case where req.body might be undefined due to multipart/form-data parsing issues
+        const body = req.body || {};
+        const { consumer_id, doc_type, file_name, geo_lat, geo_lng } = body;
+        const uploaded_by = req.user?.userId || req.user?.id || body.uploaded_by;
         if (!consumer_id || !doc_type || !req.file || !uploaded_by) {
             return res.status(400).json({ error: "consumer_id, doc_type, file, and an authenticated uploader are required" });
         }
