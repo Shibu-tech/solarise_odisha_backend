@@ -26,7 +26,7 @@ export const DocumentVerificationPanel = ({
 
   // Compute valid file URLs for current and previous versions
   const currentFileUrl = getValidUrl(document.presigned_url) || getValidUrl(document.download_url);
-  const prevFileUrl = getValidUrl(previousVersion?.prev_presigned_url) || getValidUrl(previousVersion?.file_url);
+  const prevFileUrl = getValidUrl(previousVersion?.prev_presigned_url);
 
   const handleVerify = () => {
     if (onVerify) {
