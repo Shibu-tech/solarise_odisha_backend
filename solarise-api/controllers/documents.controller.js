@@ -448,8 +448,14 @@ export const reuploadDocument = async (req, res) => {
         const geo_lat = body.geo_lat;
         const geo_lng = body.geo_lng;
 
-        if (!uploaded_by) {
-            return res.status(400).json({ error: "Authenticated uploader or uploaded_by is required" });
+        // Validate required fields and provide specific error messages
+        const missingFields = [];
+        if (!uploaded_by) missingFields.push('authenticated uploader');
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                error: `Missing required fields: ${missingFields.join(', ')}`
+            });
         }
 
         await client.query("BEGIN");
@@ -805,8 +811,17 @@ export const uploadDocument = async (req, res) => {
         const body = req.body || {};
         const { consumer_id, doc_type, file_name, geo_lat, geo_lng } = body;
         const uploaded_by = req.user?.userId || req.user?.id || body.uploaded_by;
-        if (!consumer_id || !doc_type || !req.file || !uploaded_by) {
-            return res.status(400).json({ error: "consumer_id, doc_type, file, and an authenticated uploader are required" });
+        // Validate required fields and provide specific error messages
+        const missingFields = [];
+        if (!consumer_id) missingFields.push('consumer_id');
+        if (!doc_type) missingFields.push('doc_type');
+        if (!req.file) missingFields.push('file');
+        if (!uploaded_by) missingFields.push('authenticated uploader');
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                error: `Missing required fields: ${missingFields.join(', ')}`
+            });
         }
 
         uploadedObject = await uploadFileToS3({ file: req.file, consumerId: consumer_id, documentType: doc_type });
