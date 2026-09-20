@@ -20,12 +20,13 @@ export const DocumentVerificationPanel = ({
 
   if (!document) return null;
 
-  // Compute file URLs and validity for current and previous versions
-  const currentFileUrl = document.presigned_url || document.download_url;
-  const hasCurrentFile = currentFileUrl && typeof currentFileUrl === 'string' && currentFileUrl.startsWith('http');
+  // Helper to validate URL string
+  const getValidUrl = (url) =>
+    url && typeof url === 'string' && url.startsWith('http') ? url : null;
 
-  const prevFileUrl = previousVersion?.prev_presigned_url || previousVersion?.file_url;
-  const hasPrevFile = prevFileUrl && typeof prevFileUrl === 'string' && prevFileUrl.startsWith('http');
+  // Compute valid file URLs for current and previous versions
+  const currentFileUrl = getValidUrl(document.presigned_url) || getValidUrl(document.download_url);
+  const prevFileUrl = getValidUrl(previousVersion?.prev_presigned_url) || getValidUrl(previousVersion?.file_url);
 
   const handleVerify = () => {
     if (onVerify) {
@@ -131,7 +132,7 @@ export const DocumentVerificationPanel = ({
             </div>
 
             <div className="p-4">
-              {hasPrevFile ? (
+              {prevFileUrl ? (
                 <a
                   href={prevFileUrl}
                   target="_blank"
@@ -168,7 +169,7 @@ export const DocumentVerificationPanel = ({
             </p>
           </div>
           <div className="p-4">
-            {hasCurrentFile ? (
+            {currentFileUrl ? (
               <a
                 href={currentFileUrl}
                 target="_blank"
