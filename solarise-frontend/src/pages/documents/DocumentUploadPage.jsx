@@ -125,9 +125,9 @@ const DocumentUploadPage = () => {
       }
 
       const payload = new FormData();
-      payload.append('file', form.selectedFile);
-      payload.append('consumer_id', form.consumer_id);
-      payload.append('doc_type', form.doc_type);
+      payload.append('file', selectedFile);
+      payload.append('consumer_id', consumer_id);
+      payload.append('doc_type', doc_type);
       payload.append('file_name', form.file_name || selectedFile.name);
       if (form.geo_lat) payload.append('geo_lat', form.geo_lat);
       if (form.geo_lng) payload.append('geo_lng', form.geo_lng);
