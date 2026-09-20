@@ -24,9 +24,8 @@ export const DocumentVerificationPanel = ({
   const getValidUrl = (url) =>
     url && typeof url === 'string' && url.startsWith('http') ? url : null;
 
-  // Compute valid file URLs for current and previous versions
+  // Compute valid file URL for current version
   const currentFileUrl = getValidUrl(document.presigned_url) || getValidUrl(document.download_url);
-  const prevFileUrl = getValidUrl(previousVersion?.prev_presigned_url);
 
   const handleVerify = () => {
     if (onVerify) {
@@ -121,46 +120,7 @@ export const DocumentVerificationPanel = ({
       )}
 
       {/* Document Preview */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Previous Version */}
-        {previousVersion && (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
-              <p className="text-sm font-semibold text-gray-700">
-                Previous Version (v{previousVersion.version || 1})
-              </p>
-            </div>
-
-            <div className="p-4">
-              {prevFileUrl ? (
-                <a
-                  href={prevFileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold text-gray-700 transition"
-                >
-                  📥 View Previous Document
-                </a>
-              ) : (
-                <p className="text-sm text-gray-600">
-                  No previous document URL available
-                </p>
-              )}
-
-              {previousVersion.reject_reason && (
-                <div className="mt-3 p-3 bg-red-50 rounded border border-red-200">
-                  <p className="text-xs font-semibold text-red-800 mb-1">
-                    Flag/Rejection Reason:
-                  </p>
-                  <p className="text-sm text-red-700">
-                    {previousVersion.reject_reason}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
+      <div className="grid md:grid-cols-1 gap-4">
         {/* Current Version (Corrected) */}
         <div className="bg-white rounded-lg border border-emerald-200 overflow-hidden">
           <div className="bg-emerald-100 px-4 py-3 border-b border-emerald-200">
