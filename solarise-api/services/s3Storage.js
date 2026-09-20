@@ -127,34 +127,55 @@ export const deleteFileFromS3 = async (keyOrUrl) => {
     }));
 };
 
-export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
-    try {
-        const key = extractS3Key(keyOrUrl);
-    if (!key) {
-              console.error('Failed to extract S3 key from:', keyOrUrl);
-              return null;
-    }
+// export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
+//     try {
+//         const key = extractS3Key(keyOrUrl);
+//     if (!key) {
+//               console.error('Failed to extract S3 key from:', keyOrUrl);
+//               return null;
+//     }
 
-    const { bucket, region } = getConfig();
-    const client = getS3Client({region});
+//     const { bucket, region } = getConfig();
+//     const client = getS3Client({region});
 
-    const command = new GetObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        ResponseContentDisposition: "inline",
-        ResponseContentType: 'application/pdf'
-    });
-    const url = await getSignedUrl(client, command, { expiresIn:expiresInSeconds });
-    return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+//     const command = new GetObjectCommand({
+//         Bucket: bucket,
+//         Key: key,
+//         ResponseContentDisposition: "inline",
+//         ResponseContentType: 'application/pdf'
+//     });
+//     const url = await getSignedUrl(client, command, { expiresIn:expiresInSeconds });
+//     return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 
-     console.log(`Generated presigned URL for ${key}:`,
-     url.substring(0, 100) + '...');
-    } catch (error) {
-        console.error('Error generating presigned URL:', error);
-        return null;
-    }
+//      console.log(`Generated presigned URL for ${key}:`,
+//      url.substring(0, 100) + '...');
+//     } catch (error) {
+//         console.error('Error generating presigned URL:', error);
+//         return null;
+//     }
     
-};
+// };
+
+export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
+      const key = extractS3Key(keyOrUrl);
+      if (!key) return null;
+
+      // 🔑 CHANGED: Extract both bucket AND region from config
+      const { bucket, region } = getConfig();
+
+      // 🔑 CHANGED: Pass region to S3 client
+      const client = getS3Client({ region });
+
+      const command = new GetObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          ResponseContentDisposition: "inline",
+          // 💡 RECOMMENDED: Add Content-Type for better browser handling
+          ResponseContentType: 'application/octet-stream', // Adjust per file type (pdf, image, etc.)
+      });
+
+      return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+  };
 
 export const attachPresignedUrls = async (docs, expiresInSeconds = 3600) => {
     if (!docs) return docs;
