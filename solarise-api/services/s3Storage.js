@@ -156,27 +156,58 @@ export const deleteFileFromS3 = async (keyOrUrl) => {
     
 // };
 
-export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
+// export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds = 300) => {
+//       const key = extractS3Key(keyOrUrl);
+//       if (!key) return null;
+
+//       // 🔑 CHANGED: Extract both bucket AND region from config
+//       const { bucket, region } = getConfig();
+
+//       // 🔑 CHANGED: Pass region to S3 client
+//       const client = getS3Client({ region });
+
+//       const command = new GetObjectCommand({
+//           Bucket: bucket,
+//           Key: key,
+//           ResponseContentDisposition: "inline",
+//           // 💡 RECOMMENDED: Add Content-Type for better browser handling
+//           ResponseContentType: 'application/octet-stream', // Adjust per file type (pdf, image, etc.)
+//       });
+
+//       return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+//   };
+
+ export const getPresignedDownloadUrl = async (keyOrUrl, expiresInSeconds =
+  300) => {
       const key = extractS3Key(keyOrUrl);
       if (!key) return null;
 
-      // 🔑 CHANGED: Extract both bucket AND region from config
-      const { bucket, region } = getConfig();
+      // 🔑 FIXED: Extract both bucket AND region (you were only getting
+      const { bucket, region } = getConfig();  // ← CHANGED: added region
 
-      // 🔑 CHANGED: Pass region to S3 client
-      const client = getS3Client({ region });
+      // 🔑 Your getS3Client is already correct - it uses region internally
+      const client = getS3Client();  // ✅ This is already correct as-is
 
       const command = new GetObjectCommand({
           Bucket: bucket,
           Key: key,
           ResponseContentDisposition: "inline",
-          // 💡 RECOMMENDED: Add Content-Type for better browser handling
-          ResponseContentType: 'application/octet-stream', // Adjust per file type (pdf, image, etc.)
+          // 💡 ADDED: Content-Type for better browser preview
+          ResponseContentType: getContentType(key),
       });
 
-      return await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+      return await getSignedUrl(client, command, { expiresIn:
+  expiresInSeconds });
   };
 
+  const getContentType = (key) => {
+      if (key.endsWith('.pdf')) return 'application/pdf';
+      if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
+      if (key.endsWith('.png')) return 'image/png';
+      if (key.endsWith('.txt')) return 'text/plain';
+      // Add more types as needed for your file types
+      return 'application/octet-stream'; // Safe fallback
+  };
 export const attachPresignedUrls = async (docs, expiresInSeconds = 3600) => {
     if (!docs) return docs;
     const isArray = Array.isArray(docs);
