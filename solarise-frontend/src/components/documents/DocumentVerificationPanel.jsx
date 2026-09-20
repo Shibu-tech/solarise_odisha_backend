@@ -114,6 +114,7 @@ export const DocumentVerificationPanel = ({
 
       {/* Document Preview */}
       <div className="grid md:grid-cols-2 gap-4">
+        {/* Previous Version */}
         {previousVersion && (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
@@ -151,6 +152,37 @@ export const DocumentVerificationPanel = ({
             </div>
           </div>
         )}
+
+        {/* Current Version (Corrected) */}
+        <div className="bg-white rounded-lg border border-emerald-200 overflow-hidden">
+          <div className="bg-emerald-100 px-4 py-3 border-b border-emerald-200">
+            <p className="text-sm font-semibold text-emerald-900">
+              ✓ Corrected Version (v{document.version || 1})
+            </p>
+          </div>
+          <div className="p-4">
+            {((document.presigned_url || document.download_url) && typeof (document.presigned_url || document.download_url) === 'string' && (document.presigned_url || document.download_url).startsWith('http')) ? (
+              <a
+                href={document.presigned_url || document.download_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 rounded-lg text-sm font-semibold text-emerald-700 transition"
+              >
+                📥 View Corrected Document
+              </a>
+            ) : (
+              <p className="text-sm text-gray-600">No document available</p>
+            )}
+            {document.geo_lat && document.geo_lng && (
+              <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+                <p className="text-xs font-semibold text-blue-800 mb-1">📍 Location Metadata:</p>
+                <p className="text-sm text-blue-700">
+                  {Number(document.geo_lat).toFixed(6)}, {Number(document.geo_lng).toFixed(6)}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Action Buttons */}
