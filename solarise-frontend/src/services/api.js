@@ -118,11 +118,11 @@
     getStatusSummary: () => api.get('/documents/status-summary'),
     getVerificationQueue: () => api.get('/documents/verification-queue'),
     checkS3Health: () => api.get('/documents/s3-health'),
-    create: (data) => api.post('/documents'),
-    upload: (data) => api.post('/documents/upload'),
+    create: (data, config) => api.post('/documents', data, config),
+    upload: (data, config) => api.post('/documents/upload', data, config),
     verify: (id, data) => api.patch(`/documents/${id}/verify`, data),
     reject: (id, data) => api.patch(`/documents/${id}/reject`, data),
-    reupload: (id, data) => api.post(`/documents/${id}/reupload`, data),
+    reupload: (id, data, config) => api.post(`/documents/${id}/reupload`, data, config),
     getDownloadUrl: (id) => api.get(`/documents/${id}/download-url`),
     flag: (id, data) => api.post(`/documents/${id}/flag`, data),
   };
@@ -140,23 +140,23 @@
     completeItem: (id, data) => api.patch(`/installation/${id}/complete`, data),
     saveBatch: (projectId, data) => api.post(`/installation/project/${projectId}/batch`, data),
     getProgress: (projectId) => api.get(`/installation/project/${projectId}/progress`),
-};
+  };
 
-// Actions Service
-export const actionService = {
-  getAll: () => api.get('/actions'),
-  getMyOpenActions: () => api.get('/actions/my-open-actions'),
-  getByProject: (projectId) => api.get(`/actions/project/${projectId}`),
-  create: (data) => api.post('/actions', data),
-  updateStatus: (id, data) => api.patch(`/actions/${id}/status`, data),
-  getOverdue: () => api.get('/actions/overdue'),
-};
+  // Actions Service
+  export const actionService = {
+    getAll: () => api.get('/actions'),
+    getMyOpenActions: () => api.get('/actions/my-open-actions'),
+    getByProject: (projectId) => api.get(`/actions/project/${projectId}`),
+    create: (data) => api.post('/actions', data),
+    updateStatus: (id, data) => api.patch(`/actions/${id}/status`, data),
+    getOverdue: () => api.get('/actions/overdue'),
+  };
 
-// Payments Service
+  // Payments Service
   export const paymentService = {
     getAll: () => api.get('/payments'),
     getById: (id) => api.get(`/payments/${id}`),
-    getByProject: (projectId) => api.get(`/payments/project/${projectId}`, data),
+    getByProject: (projectId) => api.get(`/payments/project/${projectId}`),
     getPending: () => api.get('/payments/pending'),
     getSummary: () => api.get('/payments/summary'),
     create: (data) => api.post('/payments', data),
@@ -168,16 +168,16 @@ export const actionService = {
     getAll: () => api.get('/notifications'),
     getUserNotifications: (userId) => api.get(`/notifications/user/${userId}`),
     create: (data) => api.post('/notifications', data),
-    markRead: (id) => api.patch(`/notifications/${id}/read`, data),
-    delete: (id) => api.delete(`/notifications/${id}`, data),
+    markRead: (id) => api.patch(`/notifications/${id}/read`),
+    delete: (id) => api.delete(`/notifications/${id}`),
   };
 
   // Consumer Transfers Service
   export const transferService = {
     initiate: (data) => api.post('/transfers', data),
     getPending: () => api.get('/transfers/pending'),
-    accept: (id) => api.post(`/transfers/${id}/accept`, data),
-    reject: (id) => api.post(`/transfers/${id}/reject`, data),
+    accept: (id, data) => api.post(`/transfers/${id}/accept`, data),
+    reject: (id, data) => api.post(`/transfers/${id}/reject`, data),
   };
 
   export default api;

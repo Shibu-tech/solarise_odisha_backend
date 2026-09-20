@@ -120,6 +120,12 @@ const DocumentUploadPage = () => {
     setError('');
 
     try {
+      if (!form.consumer_id) {
+        throw new Error('Please select a consumer.');
+      }
+      if (!form.doc_type) {
+        throw new Error('Please select a document category.');
+      }
       if (!selectedFile) {
         throw new Error('Choose a document file to upload.');
       }
@@ -127,7 +133,7 @@ const DocumentUploadPage = () => {
       const payload = new FormData();
       payload.append('file', selectedFile);
       payload.append('consumer_id', form.consumer_id);
-      payload.append('doc_type', doc_type);
+      payload.append('doc_type', form.doc_type);
       payload.append('file_name', form.file_name || selectedFile.name);
       if (form.geo_lat) payload.append('geo_lat', form.geo_lat);
       if (form.geo_lng) payload.append('geo_lng', form.geo_lng);

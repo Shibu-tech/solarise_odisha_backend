@@ -829,12 +829,67 @@ export const uploadDocument = async (req, res) => {
             });
         }
 
+        const parsedLat = (geo_lat !== undefined && geo_lat !== null && geo_lat !== "" && !isNaN(Number(geo_lat)))
+            ? Number(geo_lat)
+            : null;
+        const parsedLng = (geo_lng !== undefined && geo_lng !== null && geo_lng !== "" && !isNaN(Number(geo_lng)))
+            ? Number(geo_lng)
+            : null;
+
         uploadedObject = await uploadFileToS3({ file: req.file, consumerId: consumer_id, documentType: doc_type });
+
+        // Calculate next version
+        const versionResult = await pool.query(
+            "SELECT COALESCE(MAX(version), 0) AS max_version FROM documents WHERE consumer_id = $1 AND doc_type = $2",
+            [consumer_id, doc_type]
+        );
+        const version = Number(versionResult.rows[0]?.max_version || 0) + 1;
+
         const result = await pool.query(`
-            INSERT INTO documents (consumer_id, doc_type, file_url, file_name, mime_type, geo_lat, geo_lng, uploaded_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO documents (consumer_id, doc_type, file_url, file_name, mime_type, geo_lat, geo_lng, uploaded_by, version)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
-        `, [consumer_id, doc_type, uploadedObject.url, file_name || req.file.originalname, req.file.mimetype, geo_lat || null, geo_lng || null, uploaded_by]);
+        `, [consumer_id, doc_type, uploadedObject.url, file_name || req.file.originalname, req.file.mimetype, parsedLat, parsedLng, uploaded_by, version]);
+
+        // Link with action_required if any pending correction action exists
+        const projectRes = await pool.query(
+            "SELECT id FROM projects WHERE consumer_id = $1 ORDER BY id DESC LIMIT 1",
+            [consumer_id]
+        );
+        const projectId = projectRes.rows[0]?.id;
+        if (projectId) {
+            const actionRes = await pool.query(`
+                SELECT id FROM action_required
+                WHERE project_id = $1 
+                AND status IN ('open', 'doc_uploaded')
+                ORDER BY (
+                    CASE 
+                        WHEN $2 = 'electric_bill' AND action_type = 'electric_bill_name_correction' THEN 1
+                        WHEN $2 = 'bank_passbook' AND action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') THEN 1
+                        WHEN $2 IN ('land_ror', 'aadhaar_card') AND action_type = 'ownership_transfer' THEN 1
+                        ELSE 2
+                    END
+                ), raised_at DESC
+                LIMIT 1
+            `, [projectId, doc_type]);
+
+            if (actionRes.rowCount > 0) {
+                await pool.query(`
+                    UPDATE action_required
+                    SET status = 'doc_uploaded'
+                    WHERE id = $1
+                `, [actionRes.rows[0].id]);
+
+                try {
+                    notifyUsers({
+                        targetRoles: ['admin', 'doc_team'],
+                        projectId: projectId,
+                        title: `Document Uploaded: ${doc_type?.replace(/_/g, ' ')}`,
+                        body: `Document ${doc_type?.replace(/_/g, ' ')} (Version ${version}) has been uploaded. Please review and verify.`
+                    });
+                } catch { /* ignore notification errors */ }
+            }
+        }
 
         const docRow = result.rows[0];
         const enrichedDoc = await attachPresignedUrls(docRow);

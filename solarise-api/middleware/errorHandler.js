@@ -6,6 +6,23 @@ const errorHandler = (err, req, res, next) => {
     // Log full error for server-side debugging
     console.error(`[ERROR] ${req.method} ${req.originalUrl}:`, err.message || err);
 
+    // Multer / File upload errors
+    if (err.name === "MulterError" || err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({
+            success: false,
+            error: err.code === "LIMIT_FILE_SIZE"
+                ? "File size exceeds allowed limit (maximum 10MB)"
+                : err.message || "File upload error",
+        });
+    }
+
+    if (err.message && err.message.includes("Unsupported file type")) {
+        return res.status(400).json({
+            success: false,
+            error: err.message,
+        });
+    }
+
     // PostgreSQL error codes (from 'pg' driver)
     if (err.code) {
         switch (err.code) {
