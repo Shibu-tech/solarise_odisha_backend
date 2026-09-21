@@ -264,7 +264,7 @@ const DocumentResolvePage = () => {
                 <div><span className="text-gray-400 font-semibold block">Uploaded At</span><span className="text-gray-900 font-mono">{doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString() : 'N/A'}</span></div>
               </div>
               <div className="space-y-3">
-                <div><span className="text-gray-400 font-semibold block">File URL</span><a href={doc.download_url || doc.file_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono break-all">{doc.download_url || doc.file_url}</a></div>
+                <div><span className="text-gray-400 font-semibold block">File URL</span><a href={doc.download_url || doc.file_url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold rounded-xs border border-blue-200 text-[11px]">View Document</a></div>
                 {doc.geo_lat && doc.geo_lng && (
                   <div><span className="text-gray-400 font-semibold block">GPS Coordinates</span><span className="font-mono text-amber-700 font-bold">{doc.geo_lat}, {doc.geo_lng}</span></div>
                 )}
@@ -486,7 +486,7 @@ const DocumentResolvePage = () => {
                 <div className="text-xs space-y-1 text-gray-700">
                   <p><span className="font-semibold text-gray-500">Version:</span> v{doc.version || 1}</p>
                   <p><span className="font-semibold text-gray-500">File:</span> <span className="font-mono text-[11px]">{doc.file_name || 'N/A'}</span></p>
-                  <a href={doc.download_url || doc.file_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono text-[11px] block break-all">{doc.file_url}</a>
+                  <a href={doc.download_url || doc.file_url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold rounded-xs border border-blue-200 text-[11px] block">View Document</a>
                   {doc.reject_reason && <p className="text-rose-700 mt-1 italic">"{doc.reject_reason}"</p>}
                 </div>
               </div>
@@ -500,7 +500,7 @@ const DocumentResolvePage = () => {
                 <div className="text-xs space-y-1 text-gray-700">
                   <p><span className="font-semibold text-gray-500">Version:</span> v{uploadedNewVersion?.version || (doc.version || 1) + 1}</p>
                   <p><span className="font-semibold text-gray-500">File:</span> <span className="font-mono text-[11px]">{uploadedNewVersion?.file_name || 'corrected'}</span></p>
-                  <a href={uploadedNewVersion?.download_url || uploadedNewVersion?.file_url || '#'} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono text-[11px] block break-all">{uploadedNewVersion?.file_name || uploadedNewVersion?.file_url || 'Uploaded'}</a>
+                  <a href={uploadedNewVersion?.download_url || uploadedNewVersion?.file_url || '#'} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold rounded-xs border border-blue-200 text-[11px] block">View Document</a>
                   {uploadedNewVersion?.geo_lat && <p className="font-mono text-amber-700">GPS: {uploadedNewVersion.geo_lat}, {uploadedNewVersion.geo_lng}</p>}
                 </div>
               </div>
