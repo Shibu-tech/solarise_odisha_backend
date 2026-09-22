@@ -115,8 +115,7 @@ export const getMyOpenActions = async (req, res) => {
                 ), version DESC
                 LIMIT 1
             ) d ON true
-            WHERE (ar.assigned_to = $1 OR (ar.assigned_to IS NULL AND d.uploaded_by = $1))
-              AND ar.status NOT IN ('resolved', 'cancelled')
+            WHERE ar.status NOT IN ('resolved', 'cancelled')
             ORDER BY ar.raised_at DESC
         `, [userId]);
         const enrichedRows = await attachPresignedUrls(result.rows);
