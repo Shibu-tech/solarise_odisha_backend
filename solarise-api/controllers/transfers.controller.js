@@ -23,6 +23,11 @@ export const initiateTransfer = async (req, res) => {
             return res.status(401).json({ error: "Requesting user not found" });
         }
 
+        // Validate consumer_id is a valid positive integer
+        if (!Number.isInteger(Number(consumer_id)) || Number(consumer_id) <= 0) {
+            return res.status(400).json({ error: "Invalid consumer_id" });
+        }
+
         // Verify consumer ownership
         const consumerCheck = await pool.query(
             "SELECT id, created_by FROM consumers WHERE id = $1",
@@ -54,6 +59,15 @@ export const initiateTransfer = async (req, res) => {
         );
         if (pendingCheck.rowCount > 0) {
             return res.status(409).json({ error: "There is already a pending transfer for this consumer" });
+        }
+
+        // Final consumer existence check to prevent race conditions
+        const finalConsumerCheck = await pool.query(
+            "SELECT id FROM consumers WHERE id = $1",
+            [consumer_id]
+        );
+        if (finalConsumerCheck.rowCount === 0) {
+            return res.status(404).json({ error: "Consumer not found" });
         }
 
         const result = await pool.query(
