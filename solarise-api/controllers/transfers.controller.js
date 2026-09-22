@@ -14,6 +14,15 @@ export const initiateTransfer = async (req, res) => {
             return res.status(400).json({ error: "Cannot transfer to yourself" });
         }
 
+        // Verify the requesting user exists
+        const requestingUserCheck = await pool.query(
+            "SELECT id FROM users WHERE id = $1",
+            [from_agent_id]
+        );
+        if (requestingUserCheck.rowCount === 0) {
+            return res.status(401).json({ error: "Requesting user not found" });
+        }
+
         // Verify consumer ownership
         const consumerCheck = await pool.query(
             "SELECT id, created_by FROM consumers WHERE id = $1",
@@ -89,6 +98,16 @@ export const acceptTransfer = async (req, res) => {
         const { id } = req.params;
         const to_agent_id = req.user?.userId || req.user?.id;
 
+        // Verify the requesting user exists
+        const requestingUserCheck = await client.query(
+            "SELECT id FROM users WHERE id = $1",
+            [to_agent_id]
+        );
+        if (requestingUserCheck.rowCount === 0) {
+            await client.query("ROLLBACK");
+            return res.status(401).json({ error: "Requesting user not found" });
+        }
+
         await client.query("BEGIN");
 
         const transferCheck = await client.query(
@@ -140,6 +159,15 @@ export const rejectTransfer = async (req, res) => {
     try {
         const { id } = req.params;
         const to_agent_id = req.user?.userId || req.user?.id;
+
+        // Verify the requesting user exists
+        const requestingUserCheck = await pool.query(
+            "SELECT id FROM users WHERE id = $1",
+            [to_agent_id]
+        );
+        if (requestingUserCheck.rowCount === 0) {
+            return res.status(401).json({ error: "Requesting user not found" });
+        }
 
         const transferCheck = await pool.query(
             "SELECT id, to_agent_id, status FROM consumer_transfers WHERE id = $1",
