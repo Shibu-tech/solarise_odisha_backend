@@ -13,7 +13,6 @@ import DocumentsPage from './pages/documents/DocumentsPage';
 import DocumentUploadPage from './pages/documents/DocumentUploadPage';
 import DocumentDetailsPage from './pages/documents/DocumentDetailsPage';
 import DocumentResolvePage from './pages/documents/DocumentResolvePage';
-import PendingCorrectionsPage from './pages/documents/PendingCorrectionsPage';
 import VerificationQueuePage from './pages/documents/VerificationQueuePage';
 import PaymentsPage from './pages/payments/PaymentsPage';
 import NewPaymentPage from './pages/payments/NewPaymentPage';
@@ -60,7 +59,6 @@ function App() {
           <Route path="documents/upload" element={<DocumentUploadPage />} />
           <Route path="documents/:id" element={<DocumentDetailsPage />} />
           <Route path="documents/:id/resolve" element={<DocumentResolvePage />} />
-          <Route path="pending-corrections" element={<PendingCorrectionsPage />} />
           <Route path="verification-queue" element={<VerificationQueuePage />} />
           <Route path="payments" element={<PaymentsPage />} />
           <Route path="payments/new" element={<NewPaymentPage />} />
