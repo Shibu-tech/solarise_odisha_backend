@@ -64,62 +64,9 @@ export const getAllOpenActions = async (req, res) => {
 // 1b. GET /api/actions/my-open-actions - Open actions assigned to the current user
 export const getMyOpenActions = async (req, res) => {
     try {
-        const userId = req.user?.userId || req.user?.id;
-        if (!userId) {
-            return res.status(401).json({ error: "User authentication required" });
-        }
-        const result = await pool.query(`
-            SELECT
-                ar.id,
-                ar.project_id,
-                ar.action_type,
-                ar.detail,
-                ar.status,
-                ar.raised_by,
-                u1.first_name || ' ' || u1.last_name AS raised_by_name,
-                ar.raised_at,
-                ar.assigned_to,
-                u2.first_name || ' ' || u2.last_name AS assigned_to_name,
-                ar.resolved_by,
-                u3.first_name || ' ' || u3.last_name AS resolved_by_name,
-                ar.resolved_at,
-                p.consumer_id,
-                p.current_status AS project_status,
-                TRIM(CONCAT(c.first_name, ' ', COALESCE(c.last_name, ''))) AS consumer_name,
-                c.electric_consumer_no AS consumer_number,
-                c.phone_primary,
-                d.id AS document_id,
-                d.doc_type,
-                d.file_url,
-                d.file_name,
-                d.uploaded_by AS document_uploaded_by,
-                d.status AS document_status,
-                d.version AS document_version
-            FROM action_required ar
-            JOIN projects p ON ar.project_id = p.id
-            LEFT JOIN consumers c ON p.consumer_id = c.id
-            LEFT JOIN users u1 ON ar.raised_by = u1.id
-            LEFT JOIN users u2 ON ar.assigned_to = u2.id
-            LEFT JOIN users u3 ON ar.resolved_by = u3.id
-            LEFT JOIN LATERAL (
-                SELECT id, doc_type, file_url, file_name, status, version, uploaded_by
-                FROM documents
-                WHERE consumer_id = p.consumer_id
-                ORDER BY (
-                    CASE
-                        WHEN ar.action_type = 'electric_bill_name_correction' AND doc_type = 'electric_bill' THEN 1
-                        WHEN ar.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') AND doc_type = 'bank_passbook' THEN 1
-                        WHEN ar.action_type = 'ownership_transfer' AND doc_type IN ('land_ror', 'aadhaar_card') THEN 1
-                        ELSE 2
-                    END
-                ), version DESC
-                LIMIT 1
-            ) d ON true
-            WHERE ar.status NOT IN ('resolved', 'cancelled')
-            ORDER BY ar.raised_at DESC
-        `);
-        const enrichedRows = await attachPresignedUrls(result.rows);
-        res.status(200).json({ count: result.rowCount, data: enrichedRows });
+        // Pending correction page has been removed as per user request.
+        // Agents should use the stepped resolution window instead.
+        res.status(200).json({ count: 0, data: [] });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
