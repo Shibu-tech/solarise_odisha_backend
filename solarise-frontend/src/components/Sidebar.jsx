@@ -88,19 +88,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         roles: ['admin', 'agent', 'doc_team'],
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        ),
-      },
-      {
-        name: 'Pending Corrections',
-        path: '/pending-corrections',
-        roles: ['agent', 'admin'],
-        badge: correctionCount,
-        badgeColor: 'bg-amber-500',
-        icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         ),
       },
@@ -112,7 +100,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         badgeColor: 'bg-blue-600',
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 002-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
         ),
       },
@@ -132,7 +120,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         roles: ['admin', 'accounts'],
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002-2v10a2 2 0 002 2z" />
           </svg>
         ),
       },
@@ -153,7 +141,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         roles: ['admin', 'doc_team', 'site_manager', 'accounts', 'agent'],
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0012 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
         ),
       },
@@ -232,14 +220,14 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div className="p-3 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center space-x-3 min-w-0">
-              <div className="h-9 w-9 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-extrabold text-sm shadow-2xs shrink-0 font-mono">
+              <div className="h-9 w-9 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-extrabod text-sm shadow-2xs shrink-0 font-mono">
                 {firstLetter}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-extrabold text-slate-900 truncate" title={fullName}>
+                <p className="text-xs font-extrabod text-slate-900 truncate" title={fullName}>
                   {firstName}
                 </p>
-                <span className={`inline-block px-2 py-0.5 mt-0.5 text-[9px] font-extrabold rounded-full border uppercase tracking-wider ${roleColorMap[role] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                <span className={`inline-block px-2 py-0.5 mt-0.5 text-[9px] font-extrabod rounded-full border uppercase tracking-wider ${roleColorMap[role] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
                   {role.replace(/_/g, ' ')}
                 </span>
               </div>
@@ -251,7 +239,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               title="Logout from portal"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 013-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
             </button>
           </div>
