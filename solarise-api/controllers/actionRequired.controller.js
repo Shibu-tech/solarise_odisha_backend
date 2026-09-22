@@ -106,7 +106,7 @@ export const getMyOpenActions = async (req, res) => {
                 FROM documents
                 WHERE consumer_id = p.consumer_id
                 ORDER BY (
-                    CASE 
+                    CASE
                         WHEN ar.action_type = 'electric_bill_name_correction' AND doc_type = 'electric_bill' THEN 1
                         WHEN ar.action_type IN ('bank_passbook_name_correction', 'bank_passbook_update') AND doc_type = 'bank_passbook' THEN 1
                         WHEN ar.action_type = 'ownership_transfer' AND doc_type IN ('land_ror', 'aadhaar_card') THEN 1
@@ -117,7 +117,7 @@ export const getMyOpenActions = async (req, res) => {
             ) d ON true
             WHERE ar.status NOT IN ('resolved', 'cancelled')
             ORDER BY ar.raised_at DESC
-        `, [userId]);
+        `);
         const enrichedRows = await attachPresignedUrls(result.rows);
         res.status(200).json({ count: result.rowCount, data: enrichedRows });
     } catch (err) {
