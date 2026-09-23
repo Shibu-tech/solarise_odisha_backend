@@ -367,14 +367,17 @@ export const verifyDocument = async (req, res) => {
 
         await client.query("COMMIT");
 
-        // Send general notification
+        // Send notification to uploader unless they're the assigned agent (who gets specific notification)
         try {
-            notifyUsers({
-                targetRoles: ['admin', 'site_manager', 'agent'],
-                userId: verifiedDoc.uploaded_by,
-                title: `Document Verified`,
-                body: `Document "${verifiedDoc.doc_type?.replace(/_/g, ' ')}" has been verified by Document Desk.`
-            });
+            const shouldNotifyUploader = !action || !action.assigned_to || (action.assigned_to !== verifiedDoc.uploaded_by);
+            if (shouldNotifyUploader) {
+                notifyUsers({
+                    userId: verifiedDoc.uploaded_by,
+                    projectId: projectId,
+                    title: `Document Verified`,
+                    body: `Document "${verifiedDoc.doc_type?.replace(/_/g, ' ')}" has been verified by Document Desk.`
+                });
+            }
         } catch { /* ignore notification errors */ }
 
         // Return response with action status
@@ -422,8 +425,8 @@ export const rejectDocument = async (req, res) => {
 
         const rejectedDoc = result.rows[0];
         notifyUsers({
-            targetRoles: ['admin', 'site_manager', 'agent'],
             userId: rejectedDoc.uploaded_by,
+            projectId: rejectedDoc.project_id || null,
             title: `Document Rejected`,
             body: `Document "${rejectedDoc.doc_type?.replace(/_/g, ' ')}" rejected. Reason: ${reject_reason}`
         });
@@ -570,7 +573,6 @@ export const reuploadDocument = async (req, res) => {
 
         try {
             notifyUsers({
-                targetRoles: ['admin', 'doc_team', 'site_manager'],
                 userId: uploaded_by,
                 projectId: projectId,
                 title: `Document Re-uploaded (v${newVersion})`,
