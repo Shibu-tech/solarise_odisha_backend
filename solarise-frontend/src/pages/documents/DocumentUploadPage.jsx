@@ -12,15 +12,18 @@ const DocumentUploadPage = () => {
   const [error, setError] = useState('');
   const [flaggedDocs, setFlaggedDocs] = useState([]);
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'resolve'
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [showMap, setShowMap] = useState(false);
 
   const [form, setForm] = useState({
     consumer_id: '',
-    doc_type: 'electric_bill',
-    file_name: '',
     geo_lat: '',
     geo_lng: '',
+    electric_bill_file: null,
+    aadhaar_card_file: null,
+    pan_card_file: null,
+    bank_passbook_file: null,
+    optional_doc_type: '',
+    optional_file: null,
+    optional_file_name: '',
   });
 
   useEffect(() => {
@@ -60,8 +63,8 @@ const DocumentUploadPage = () => {
 
       const flagged = list.filter(d => {
         if (['action_required', 'rejected'].includes(d.status)) return true;
-        const hasOpenAct = openActions.some(a => 
-          String(a.consumer_id) === String(d.consumer_id) && 
+        const hasOpenAct = openActions.some(a =>
+          String(a.consumer_id) === String(d.consumer_id) &&
           !['resolved', 'cancelled'].includes(a.status)
         );
         return hasOpenAct;
@@ -103,15 +106,14 @@ const DocumentUploadPage = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
+  const handleMandatoryFileChange = (docType, e) => {
     const file = e.target.files?.[0] || null;
-    setSelectedFile(file);
-    if (file) {
-      setForm((prev) => ({
-        ...prev,
-        file_name: prev.file_name || file.name,
-      }));
-    }
+    setForm((prev) => ({ ...prev, [docType + '_file']: file }));
+  };
+
+  const handleOptionalFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setForm((prev) => ({ ...prev, optional_file: file }));
   };
 
   const handleSubmit = async (e) => {
@@ -123,24 +125,47 @@ const DocumentUploadPage = () => {
       if (!form.consumer_id) {
         throw new Error('Please select a consumer.');
       }
-      if (!form.doc_type) {
-        throw new Error('Please select a document category.');
-      }
-      if (!selectedFile) {
-        throw new Error('Choose a document file to upload.');
+
+      // Validate mandatory documents
+      const mandatoryDocs = [
+        { key: 'electric_bill_file', docType: 'electric_bill', label: 'Electric Bill' },
+        { key: 'aadhaar_card_file', docType: 'aadhaar_card', label: 'Aadhaar Card' },
+        { key: 'pan_card_file', docType: 'pan_card', label: 'PAN Card' },
+        { key: 'bank_passbook_file', docType: 'bank_passbook', label: 'Bank Passbook' }
+      ];
+
+      for (const { key, docType, label } of mandatoryDocs) {
+        if (!form[key]) {
+          throw new Error(`Please select a file for ${label}.`);
+        }
       }
 
-      const payload = new FormData();
-      payload.append('file', selectedFile);
-      payload.append('consumer_id', form.consumer_id);
-      payload.append('doc_type', form.doc_type);
-      payload.append('file_name', form.file_name || selectedFile.name);
-      if (form.geo_lat) payload.append('geo_lat', form.geo_lat);
-      if (form.geo_lng) payload.append('geo_lng', form.geo_lng);
-      const res = await documentService.upload(payload);
+      // Upload mandatory documents
+      for (const { key, docType, label } of mandatoryDocs) {
+        const file = form[key];
+        const payload = new FormData();
+        payload.append('file', file);
+        payload.append('consumer_id', form.consumer_id);
+        payload.append('doc_type', docType);
+        payload.append('file_name', file.name);
+        if (form.geo_lat) payload.append('geo_lat', form.geo_lat);
+        if (form.geo_lng) payload.append('geo_lng', form.geo_lng);
+        await documentService.upload(payload);
+      }
 
-      const newId = res.data?.data?.id || res.data?.id;
-      navigate(newId ? `/documents/${newId}` : '/documents');
+      // Upload optional document if provided
+      if (form.optional_doc_type && form.optional_file) {
+        const payload = new FormData();
+        payload.append('file', form.optional_file);
+        payload.append('consumer_id', form.consumer_id);
+        payload.append('doc_type', form.optional_doc_type);
+        payload.append('file_name', form.optional_file_name || form.optional_file.name);
+        if (form.geo_lat) payload.append('geo_lat', form.geo_lat);
+        if (form.geo_lng) payload.append('geo_lng', form.geo_lng);
+        await documentService.upload(payload);
+      }
+
+      navigate('/documents');
     } catch (err) {
       console.error('Error uploading document:', err);
       setError(err.response?.data?.error || err.message || 'Failed to upload document');
@@ -296,46 +321,156 @@ const DocumentUploadPage = () => {
               </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Document Category *</label>
-                <select
-                  name="doc_type"
-                  value={form.doc_type}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2.5 rounded-xl border text-xs bg-white focus:ring-2 focus:ring-emerald-500"
-                >
-                  {ALL_DOCUMENT_TYPES.map((dt) => (
-                    <option key={dt.value} value={dt.value}>
-                      {dt.label} ({dt.value})
-                    </option>
-                  ))}
-                </select>
+            {/* Mandatory Documents */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Electric Bill *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
+                    onChange={(e) => handleMandatoryFileChange('electric_bill', e)}
+                    className="sr-only"
+                  />
+                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                    <span className="block text-xs font-bold text-emerald-900">Choose Electric Bill file</span>
+                    <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
+                    <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
+                      {form.electric_bill_file ? 'Change file' : 'Browse files'}
+                    </span>
+                    {form.electric_bill_file && (
+                      <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">
+                        {form.electric_bill_file.name} ({Math.ceil(form.electric_bill_file.size / 1024)} KB)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Aadhaar Card *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
+                    onChange={(e) => handleMandatoryFileChange('aadhaar_card', e)}
+                    className="sr-only"
+                  />
+                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                    <span className="block text-xs font-bold text-emerald-900">Choose Aadhaar Card file</span>
+                    <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
+                    <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
+                      {form.aadhaar_card_file ? 'Change file' : 'Browse files'}
+                    </span>
+                    {form.aadhaar_card_file && (
+                      <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">
+                        {form.aadhaar_card_file.name} ({Math.ceil(form.aadhaar_card_file.size / 1024)} KB)
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Document File Title</label>
-                <input
-                  type="text"
-                  name="file_name"
-                  value={form.file_name}
-                  onChange={handleChange}
-                  placeholder="e.g. Geotag_Roof_Site.jpg"
-                  className="w-full px-3 py-2 rounded-xl border text-xs"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">PAN Card *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
+                    onChange={(e) => handleMandatoryFileChange('pan_card', e)}
+                    className="sr-only"
+                  />
+                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                    <span className="block text-xs font-bold text-emerald-900">Choose PAN Card file</span>
+                    <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
+                    <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
+                      {form.pan_card_file ? 'Change file' : 'Browse files'}
+                    </span>
+                    {form.pan_card_file && (
+                      <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">
+                        {form.pan_card_file.name} ({Math.ceil(form.pan_card_file.size / 1024)} KB)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Bank Passbook *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
+                    onChange={(e) => handleMandatoryFileChange('bank_passbook', e)}
+                    className="sr-only"
+                  />
+                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                    <span className="block text-xs font-bold text-emerald-900">Choose Bank Passbook file</span>
+                    <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
+                    <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
+                      {form.bank_passbook_file ? 'Change file' : 'Browse files'}
+                    </span>
+                    {form.bank_passbook_file && (
+                      <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">
+                        {form.bank_passbook_file.name} ({Math.ceil(form.bank_passbook_file.size / 1024)} KB)
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <span className="block text-xs font-semibold text-gray-700 mb-2">Document file *</span>
-              <label className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-5 cursor-pointer hover:border-emerald-400 transition">
-                <span className="block text-xs font-bold text-emerald-900">Choose a document from your device</span>
-                <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4" onChange={handleFileChange} className="sr-only" />
-                <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">{selectedFile ? 'Change file' : 'Browse files'}</span>
-                {selectedFile && <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">{selectedFile.name} ({Math.ceil(selectedFile.size / 1024)} KB)</span>}
-              </label>
+            {/* Optional Document */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Optional Document Type (optional)</label>
+                  <select
+                    name="optional_doc_type"
+                    value={form.optional_doc_type}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2.5 rounded-xl border text-xs bg-white focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="">Select optional document type</option>
+                    {ALL_DOCUMENT_TYPES
+                      .filter(dt =>
+                        !['electric_bill', 'aadhaar_card', 'pan_card', 'bank_passbook'].includes(dt.value)
+                      )
+                      .map((dt) => (
+                        <option key={dt.value} value={dt.value}>
+                          {dt.label} ({dt.value})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Optional Document File Title (optional)</label>
+                  <input
+                    type="text"
+                    name="optional_file_name"
+                    value={form.optional_file_name}
+                    onChange={handleChange}
+                    placeholder="e.g. Geotag_Roof_Site.jpg"
+                    className="w-full px-3 py-2 rounded-xl border text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-xs font-semibold text-gray-700 mb-2">Optional Document File (optional)</label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
+                  onChange={handleOptionalFileChange}
+                  className="sr-only"
+                />
+                <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                  <span className="block text-xs font-bold text-emerald-900">Choose optional document file</span>
+                  <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
+                  <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
+                    {form.optional_file ? 'Change file' : 'Browse files'}
+                  </span>
+                  {form.optional_file && (
+                    <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">
+                      {form.optional_file.name} ({Math.ceil(form.optional_file.size / 1024)} KB)
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* GPS Geotagging Card */}
@@ -426,7 +561,7 @@ const DocumentUploadPage = () => {
                 disabled={loading || consumers.length === 0}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition shadow-2xs"
               >
-                {loading ? 'Uploading...' : 'Save & Upload Document'}
+                {loading ? 'Uploading...' : 'Save & Upload Documents'}
               </button>
             </div>
           </form>
