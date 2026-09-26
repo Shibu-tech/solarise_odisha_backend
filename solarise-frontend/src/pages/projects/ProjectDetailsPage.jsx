@@ -100,6 +100,7 @@ const ProjectDetailsPage = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Status transition state
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -236,6 +237,22 @@ const ProjectDetailsPage = () => {
       setError(err.response?.data?.error || 'Failed to load project details from backend');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle project deletion
+  const handleDeleteProject = async () => {
+    if (!window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      setIsDeleting(true);
+      await projectService.delete(id);
+      navigate('/projects');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete project');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -432,6 +449,13 @@ const ProjectDetailsPage = () => {
             className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold rounded-xl hover:bg-amber-100 transition"
           >
             + Raise Action Required
+          </button>
+          <button
+            onClick={handleDeleteProject}
+            disabled={isDeleting}
+            className="px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 transition"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Project'}
           </button>
           <button
             onClick={() => navigate('/projects')}
