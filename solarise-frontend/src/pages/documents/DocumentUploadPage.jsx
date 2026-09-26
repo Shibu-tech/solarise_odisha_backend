@@ -12,6 +12,7 @@ const DocumentUploadPage = () => {
   const [error, setError] = useState('');
   const [flaggedDocs, setFlaggedDocs] = useState([]);
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'resolve'
+  const [showMap, setShowMap] = useState(false);
 
   const [form, setForm] = useState({
     consumer_id: '',
