@@ -13,6 +13,11 @@ const DocumentUploadPage = () => {
   const [flaggedDocs, setFlaggedDocs] = useState([]);
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'resolve'
   const [showMap, setShowMap] = useState(false);
+  const electricBillFileRef = useRef(null);
+  const aadhaarCardFileRef = useRef(null);
+  const panCardFileRef = useRef(null);
+  const bankPassbookFileRef = useRef(null);
+  const optionalFileRef = useRef(null);
 
   const [form, setForm] = useState({
     consumer_id: '',
@@ -326,12 +331,16 @@ const DocumentUploadPage = () => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Electric Bill *</label>
                   <input
+                    ref={electricBillFileRef}
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
                     onChange={(e) => handleMandatoryFileChange('electric_bill', e)}
                     className="sr-only"
                   />
-                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                  <div
+                    onClick={() => electricBillFileRef.current?.click()}
+                    className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition"
+                  >
                     <span className="block text-xs font-bold text-emerald-900">Choose Electric Bill file</span>
                     <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
                     <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
@@ -347,12 +356,16 @@ const DocumentUploadPage = () => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Aadhaar Card *</label>
                   <input
+                    ref={aadhaarCardFileRef}
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
                     onChange={(e) => handleMandatoryFileChange('aadhaar_card', e)}
                     className="sr-only"
                   />
-                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                  <div
+                    onClick={() => aadhaarCardFileRef.current?.click()}
+                    className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition"
+                  >
                     <span className="block text-xs font-bold text-emerald-900">Choose Aadhaar Card file</span>
                     <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
                     <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
@@ -371,12 +384,16 @@ const DocumentUploadPage = () => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">PAN Card *</label>
                   <input
+                    ref={panCardFileRef}
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
                     onChange={(e) => handleMandatoryFileChange('pan_card', e)}
                     className="sr-only"
                   />
-                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                  <div
+                    onClick={() => panCardFileRef.current?.click()}
+                    className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition"
+                  >
                     <span className="block text-xs font-bold text-emerald-900">Choose PAN Card file</span>
                     <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
                     <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
@@ -392,12 +409,16 @@ const DocumentUploadPage = () => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Bank Passbook *</label>
                   <input
+                    ref={bankPassbookFileRef}
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
                     onChange={(e) => handleMandatoryFileChange('bank_passbook', e)}
                     className="sr-only"
                   />
-                  <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                  <div
+                    onClick={() => bankPassbookFileRef.current?.click()}
+                    className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition"
+                  >
                     <span className="block text-xs font-bold text-emerald-900">Choose Bank Passbook file</span>
                     <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
                     <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
@@ -452,12 +473,16 @@ const DocumentUploadPage = () => {
               <div className="mt-4">
                 <label className="block text-xs font-semibold text-gray-700 mb-2">Optional Document File (optional)</label>
                 <input
+                  ref={optionalFileRef}
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
                   onChange={handleOptionalFileChange}
                   className="sr-only"
                 />
-                <div className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition">
+                <div
+                  onClick={() => optionalFileRef.current?.click()}
+                  className="block border-2 border-dashed border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 cursor-pointer hover:border-emerald-400 transition"
+                >
                   <span className="block text-xs font-bold text-emerald-900">Choose optional document file</span>
                   <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
                   <span className="mt-3 inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">
