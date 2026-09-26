@@ -108,6 +108,7 @@
     getById: (id) => api.get(`/projects/${id}`),
     create: (data) => api.post('/projects', data),
     updateStatus: (id, data) => api.patch(`/projects/${id}/status`, data),
+    delete: (id) => api.delete(`/projects/${id}`),
   };
 
   // Documents Service
