@@ -175,8 +175,8 @@ const DocumentUploadPage = () => {
   };
 
   const matchingFlaggedDoc = flaggedDocs.find(
-    (d) => String(d.consumer_id) === String(form.consumer_id) && (d.doc_type === form.doc_type || !form.doc_type)
-  ) || flaggedDocs.find((d) => String(d.consumer_id) === String(form.consumer_id));
+    (d) => String(d.consumer_id) === String(form.consumer_id)
+  );
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
@@ -281,12 +281,10 @@ const DocumentUploadPage = () => {
               <div className="space-y-1">
                 <span className="font-bold text-amber-900 flex items-center space-x-1">
                   <svg className="w-4 h-4 text-orange-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.78-1.34-.25-2.864 1.018-3.836 1.306-1.016 2.888-.918 4.071-.345"/></svg>
-                  <span>Flagged Document Detected for this Consumer!</span>
+                  <span>Flagged Documents Detected for this Consumer!</span>
                 </span>
                 <p className="text-amber-800 text-[11px]">
-                  Consumer <span className="font-semibold">{matchingFlaggedDoc.consumer_name}</span> has a document marked as{' '}
-                  <span className="font-bold uppercase text-orange-900">{matchingFlaggedDoc.status?.replace(/_/g, ' ')}</span> for{' '}
-                  <span className="font-semibold">{(matchingFlaggedDoc.doc_type || '').replace(/_/g, ' ')}</span>.
+                  Consumer <span className="font-semibold">{matchingFlaggedDoc.consumer_name}</span> has flagged document(s) that require resolution.
                 </p>
               </div>
               <button
