@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentService, consumerService, actionService } from '../../services/api';
 import { ALL_DOCUMENT_TYPES } from '../../constants/documentTypes';
