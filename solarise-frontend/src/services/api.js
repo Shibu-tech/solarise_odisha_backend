@@ -49,7 +49,14 @@
 
       const title = status ? `Backend Error ${status}` : 'Connection Refused';
 
-      if (!error.config?.suppressToast && typeof window !== 'undefined' && window.dispatchEvent) {
+      // Suppress popup toasts for 401 Unauthorized / expired token responses or initial session checks
+      const isAuthCheckOrExpiredToken =
+        status === 401 ||
+        error.config?.url?.includes('/auth/me') ||
+        (typeof errorMessage === 'string' &&
+          (errorMessage.toLowerCase().includes('token') || errorMessage.toLowerCase().includes('unauthorized')));
+
+      if (!error.config?.suppressToast && !isAuthCheckOrExpiredToken && typeof window !== 'undefined' && window.dispatchEvent) {
         window.dispatchEvent(
           new CustomEvent('app:toast', {
             detail: {
@@ -69,7 +76,7 @@
   // Auth Service
   export const authService = {
     login: (credentials) => api.post('/auth/login', credentials),
-    getMe: () => api.get('/auth/me'),
+    getMe: () => api.get('/auth/me', { suppressToast: true }),
   };
 
   // Users Service

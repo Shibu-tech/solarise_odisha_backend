@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await api.get('/auth/me');
+          const response = await api.get('/auth/me', { suppressToast: true });
           const userData = response.data?.data || response.data;
           setUser(userData);
         } else {

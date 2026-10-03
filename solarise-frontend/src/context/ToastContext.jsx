@@ -45,6 +45,15 @@ export const ToastProvider = ({ children }) => {
     const handleGlobalToast = (event) => {
       if (event.detail) {
         const { message, type, title, duration } = event.detail;
+        // Suppress benign auth token expiration messages from popping up
+        if (
+          typeof message === 'string' &&
+          (message.toLowerCase().includes('invalid or expired token') ||
+            message.toLowerCase().includes('authorization token missing') ||
+            message.toLowerCase().includes('jwt expired'))
+        ) {
+          return;
+        }
         addToast(message, type || 'error', title, duration);
       }
     };
