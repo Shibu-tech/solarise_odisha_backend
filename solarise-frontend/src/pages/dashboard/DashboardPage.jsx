@@ -67,20 +67,16 @@ const DashboardPage = () => {
         <StatsGrid />
       </section>
 
-      {/* 2. Interactive Charts Section (Visual Graphs in Light Mode) */}
+      {/* 2. Project Pipeline Lifecycle & Quick Action Hub */}
       <section className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PipelineChart />
-        <RevenueTrendChart />
+        <QuickActions />
       </section>
 
-      {/* 3. Bottom Bento Grid: Activity Feed & Quick Action Hub */}
-      <section className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <RecentActivity />
-        </div>
-        <div className="lg:col-span-1">
-          <QuickActions />
-        </div>
+      {/* 3. Activity Stream & Revenue & Collections */}
+      <section className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RecentActivity />
+        <RevenueTrendChart />
       </section>
     </div>
   );

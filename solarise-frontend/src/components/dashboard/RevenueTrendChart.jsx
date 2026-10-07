@@ -91,7 +91,7 @@ const RevenueTrendChart = () => {
     : '';
 
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-slate-200/80 shadow-sm flex flex-col justify-between">
+    <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-slate-200/80 shadow-sm h-full flex flex-col justify-between">
       {/* Header */}
       <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
         <div>
