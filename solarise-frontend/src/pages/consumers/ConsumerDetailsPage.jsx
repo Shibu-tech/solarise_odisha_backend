@@ -609,7 +609,7 @@ const ConsumerDetailsPage = () => {
             <span>Uploaded Verification Documents ({documents.length})</span>
           </h2>
           <button
-            onClick={() => navigate('/documents/upload')}
+            onClick={() => navigate('/documents/upload', { state: { consumerId: consumer.id } })}
             className="px-3.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold rounded-xl transition"
           >
             + Upload Document

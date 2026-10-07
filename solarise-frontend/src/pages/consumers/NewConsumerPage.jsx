@@ -657,6 +657,12 @@ const NewConsumerPage = () => {
                 <option value="bank_loan">PSU Bank Loan</option>
                 <option value="shriram_finance">Shriram Finance</option>
               </select>
+              {form.payment_mode === 'bank_loan' && (
+                <p className="text-[11px] text-amber-700 font-semibold mt-1.5 flex items-center space-x-1">
+                  <span>ℹ️</span>
+                  <span>PSU Bank Loan requires 5 mandatory documents (Electric Bill, Aadhaar, PAN, Bank Passbook, and Land ROR).</span>
+                </p>
+              )}
             </div>
 
             <div>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { documentService, consumerService, actionService } from '../../services/api';
 import { ALL_DOCUMENT_TYPES } from '../../constants/documentTypes';
 import LocationMapPicker from '../../components/ui/LocationMapPicker';
 
 const DocumentUploadPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialConsumerId = location.state?.consumerId || new URLSearchParams(location.search).get('consumer_id') || '';
 
   const [consumers, setConsumers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -17,16 +19,18 @@ const DocumentUploadPage = () => {
   const aadhaarCardFileRef = useRef(null);
   const panCardFileRef = useRef(null);
   const bankPassbookFileRef = useRef(null);
+  const landRorFileRef = useRef(null);
   const optionalFileRef = useRef(null);
 
   const [form, setForm] = useState({
-    consumer_id: '',
+    consumer_id: initialConsumerId,
     geo_lat: '',
     geo_lng: '',
     electric_bill_file: null,
     aadhaar_card_file: null,
     pan_card_file: null,
     bank_passbook_file: null,
+    land_ror_file: null,
     optional_doc_type: '',
     optional_file: null,
     optional_file_name: '',
@@ -43,7 +47,10 @@ const DocumentUploadPage = () => {
       const list = res.data?.data || res.data || [];
       setConsumers(list);
       if (list.length > 0) {
-        setForm((prev) => ({ ...prev, consumer_id: list[0].id }));
+        setForm((prev) => ({
+          ...prev,
+          consumer_id: prev.consumer_id || initialConsumerId || list[0].id
+        }));
       }
     } catch (err) {
       console.warn('Error fetching consumers:', err);
@@ -122,6 +129,9 @@ const DocumentUploadPage = () => {
     setForm((prev) => ({ ...prev, optional_file: file }));
   };
 
+  const selectedConsumer = consumers.find((c) => String(c.id) === String(form.consumer_id));
+  const isPsuBankLoan = selectedConsumer?.payment_mode === 'bank_loan' || selectedConsumer?.payment_mode === 'psu_bank_loan';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -132,12 +142,13 @@ const DocumentUploadPage = () => {
         throw new Error('Please select a consumer.');
       }
 
-      // Validate mandatory documents
+      // Validate mandatory documents (5 if PSU Bank Loan, 4 otherwise)
       const mandatoryDocs = [
         { key: 'electric_bill_file', docType: 'electric_bill', label: 'Electric Bill' },
         { key: 'aadhaar_card_file', docType: 'aadhaar_card', label: 'Aadhaar Card' },
         { key: 'pan_card_file', docType: 'pan_card', label: 'PAN Card' },
-        { key: 'bank_passbook_file', docType: 'bank_passbook', label: 'Bank Passbook' }
+        { key: 'bank_passbook_file', docType: 'bank_passbook', label: 'Bank Passbook' },
+        ...(isPsuBankLoan ? [{ key: 'land_ror_file', docType: 'land_ror', label: 'Land ROR' }] : []),
       ];
 
       for (const { key, docType, label } of mandatoryDocs) {
@@ -318,15 +329,45 @@ const DocumentUploadPage = () => {
                 ) : (
                   consumers.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.full_name} — Elec No: {c.electric_consumer_no || 'N/A'}
+                      {c.full_name} — Elec No: {c.electric_consumer_no || 'N/A'} {c.payment_mode === 'bank_loan' ? '(PSU Bank Loan)' : c.payment_mode === 'shriram_finance' ? '(Shriram Finance)' : '(Cash)'}
                     </option>
                   ))
                 )}
               </select>
             </div>
 
+            {selectedConsumer && (
+              <div className="flex flex-wrap items-center gap-2 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
+                <span className="text-slate-600 font-semibold">Payment Mode:</span>
+                <span className={`px-2.5 py-0.5 rounded-full font-extrabold text-[11px] border ${
+                  isPsuBankLoan
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : selectedConsumer.payment_mode === 'shriram_finance'
+                    ? 'bg-purple-50 text-purple-700 border-purple-200'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
+                  {isPsuBankLoan ? 'PSU Bank Loan' : selectedConsumer.payment_mode === 'shriram_finance' ? 'Shriram Finance' : 'Cash'}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {isPsuBankLoan
+                    ? '• Requires 5 mandatory documents (Electric Bill, Aadhaar, PAN, Bank Passbook, Land ROR)'
+                    : '• Requires 4 mandatory documents (Electric Bill, Aadhaar, PAN, Bank Passbook)'}
+                </span>
+              </div>
+            )}
+
             {/* Mandatory Documents */}
             <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-mono flex items-center space-x-2">
+                  <span>📑 Mandatory Documents ({isPsuBankLoan ? '5' : '4'})</span>
+                </h2>
+                {isPsuBankLoan && (
+                  <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    Land ROR Required for PSU Bank Loan
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Electric Bill *</label>
@@ -432,6 +473,42 @@ const DocumentUploadPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* 5th Mandatory Document: Land ROR (Only if PSU Bank Loan) */}
+              {isPsuBankLoan && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1 flex items-center justify-between">
+                      <span>Land ROR (Record of Rights / Patta) *</span>
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        PSU Loan Mandatory
+                      </span>
+                    </label>
+                    <input
+                      ref={landRorFileRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4"
+                      onChange={(e) => handleMandatoryFileChange('land_ror', e)}
+                      className="sr-only"
+                    />
+                    <div
+                      onClick={() => landRorFileRef.current?.click()}
+                      className="block border-2 border-dashed border-amber-300 bg-amber-50/50 rounded-2xl p-6 cursor-pointer hover:border-amber-400 transition"
+                    >
+                      <span className="block text-xs font-bold text-amber-950">Choose Land ROR file</span>
+                      <span className="block text-[10px] text-slate-500 mt-1">PDF, JPG, PNG, WEBP, or MP4 up to 5 MB</span>
+                      <span className="mt-3 inline-flex items-center px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition">
+                        {form.land_ror_file ? 'Change file' : 'Browse files'}
+                      </span>
+                      {form.land_ror_file && (
+                        <span className="block mt-2 text-xs font-semibold text-slate-700 truncate">
+                          {form.land_ror_file.name} ({Math.ceil(form.land_ror_file.size / 1024)} KB)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Optional Document */}
@@ -448,7 +525,10 @@ const DocumentUploadPage = () => {
                     <option value="">Select optional document type</option>
                     {ALL_DOCUMENT_TYPES
                       .filter(dt =>
-                        !['electric_bill', 'aadhaar_card', 'pan_card', 'bank_passbook'].includes(dt.value)
+                        !(isPsuBankLoan
+                          ? ['electric_bill', 'aadhaar_card', 'pan_card', 'bank_passbook', 'land_ror']
+                          : ['electric_bill', 'aadhaar_card', 'pan_card', 'bank_passbook']
+                        ).includes(dt.value)
                       )
                       .map((dt) => (
                         <option key={dt.value} value={dt.value}>
