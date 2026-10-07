@@ -270,7 +270,8 @@ const ConsumersPage = () => {
           >
             <option value="all">All Payment Modes</option>
             <option value="cash">Cash Only</option>
-            <option value="bank_loan">Bank Loan Only</option>
+            <option value="bank_loan">PSU Bank Loan Only</option>
+            <option value="shriram_finance">Shriram Finance Only</option>
           </select>
 
           {/* MAC Age Filter */}
@@ -386,11 +387,13 @@ const ConsumersPage = () => {
                     </Table.Cell>
 
                     <Table.Cell>
-                      <span className={`px-2.5 py-0.5 text-[10px] rounded-full font-extrabold capitalize border ${c.payment_mode === 'cash'
+                      <span className={`px-2.5 py-0.5 text-[10px] rounded-full font-extrabold border ${c.payment_mode === 'cash'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : c.payment_mode === 'shriram_finance'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200'
                           : 'bg-blue-50 text-blue-700 border-blue-200'
                         }`}>
-                        {c.payment_mode || 'Cash'}
+                        {c.payment_mode === 'bank_loan' ? 'PSU Bank Loan' : c.payment_mode === 'shriram_finance' ? 'Shriram Finance' : 'Cash'}
                       </span>
                     </Table.Cell>
 

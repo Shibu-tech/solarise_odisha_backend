@@ -119,7 +119,8 @@ END $$;
 DO $$ BEGIN
     CREATE TYPE solarise.payment_mode AS ENUM (
         'cash',
-        'bank_loan'
+        'bank_loan',
+        'shriram_finance'
     );
 EXCEPTION WHEN duplicate_object THEN null;
 END $$;

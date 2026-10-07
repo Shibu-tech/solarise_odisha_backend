@@ -326,9 +326,9 @@ const ConsumerDetailsPage = () => {
         <div>
           <div className="flex items-center space-x-3">
             <h1 className="text-2xl font-extrabold text-slate-900">{consumer.full_name}</h1>
-            <span className={`px-3 py-1 text-xs font-bold rounded-full capitalize ${consumer.payment_mode === 'cash' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+            <span className={`px-3 py-1 text-xs font-bold rounded-full ${consumer.payment_mode === 'cash' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : consumer.payment_mode === 'shriram_finance' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
               }`}>
-              Payment: {consumer.payment_mode || 'Cash'}
+              Payment: {consumer.payment_mode === 'bank_loan' ? 'PSU Bank Loan' : consumer.payment_mode === 'shriram_finance' ? 'Shriram Finance' : 'Cash'}
             </span>
             {isDeactivated && (
               <span className="px-3 py-1 text-xs font-extrabold rounded-full bg-amber-100 text-amber-950 border border-amber-300">
@@ -715,7 +715,8 @@ const ConsumerDetailsPage = () => {
                     className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 bg-white"
                   >
                     <option value="cash">Cash</option>
-                    <option value="bank_loan">Bank Loan</option>
+                    <option value="bank_loan">PSU Bank Loan</option>
+                    <option value="shriram_finance">Shriram Finance</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">

@@ -654,7 +654,8 @@ const NewConsumerPage = () => {
                 className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 bg-white text-xs"
               >
                 <option value="cash">Cash Payment</option>
-                <option value="bank_loan">Bank Loan</option>
+                <option value="bank_loan">PSU Bank Loan</option>
+                <option value="shriram_finance">Shriram Finance</option>
               </select>
             </div>
 
