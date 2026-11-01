@@ -67,10 +67,10 @@ const DashboardPage = () => {
         <StatsGrid />
       </section>
 
-      {/* 2. Project Pipeline Lifecycle & Quick Action Hub */}
+      {/* 2. Quick Action Hub & Project Pipeline Lifecycle */}
       <section className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PipelineChart />
         <QuickActions />
+        <PipelineChart />
       </section>
 
       {/* 3. Activity Stream & Revenue & Collections */}
