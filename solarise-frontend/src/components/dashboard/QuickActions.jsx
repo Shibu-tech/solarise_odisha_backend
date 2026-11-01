@@ -8,7 +8,7 @@ const actions = [
     description: 'Add new consumer with details',
     icon: 'user-plus',
     iconBg: 'bg-blue-50 text-blue-600 border-blue-200/80',
-    path: '/consumers',
+    path: '/consumers/new',
   },
   {
     id: 2,
@@ -16,7 +16,7 @@ const actions = [
     description: 'Register consumer & project pipeline',
     icon: 'plus',
     iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/80',
-    path: '/projects',
+    path: '/projects/new',
   },
   {
     id: 3,
