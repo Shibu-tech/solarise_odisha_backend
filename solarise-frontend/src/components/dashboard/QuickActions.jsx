@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom';
 const actions = [
   {
     id: 1,
-    title: 'New Solar Project',
-    description: 'Register consumer & project pipeline',
+    title: 'Register Consumer',
+    description: 'Add new consumer with details',
     icon: 'plus',
     iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/80',
     path: '/projects',
   },
   {
     id: 2,
-    title: 'Register Consumer',
-    description: 'Add consumer identity & area info',
+    title: 'Add Project',
+    description: 'Register consumer & project pipeline',
     icon: 'user-plus',
     iconBg: 'bg-blue-50 text-blue-600 border-blue-200/80',
     path: '/consumers',
@@ -70,9 +70,9 @@ const QuickActions = () => {
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                       d={action.icon === 'plus' ? 'M12 4v16m8-8H4' :
-                         action.icon === 'user-plus' ? 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z' :
-                         action.icon === 'upload' ? 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' :
-                         'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'} />
+                        action.icon === 'user-plus' ? 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z' :
+                          action.icon === 'upload' ? 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' :
+                            'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'} />
                   </svg>
                 </div>
                 <div>
